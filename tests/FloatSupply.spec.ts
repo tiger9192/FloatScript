@@ -7,7 +7,7 @@ let browser: Browser;
 let defaultContext: Context;
 let page: Page
 //0: Djed; 1:Snek; 2:iUsd; 3: Ada
-let tk = 3;
+let tk = 0;
 
 test.beforeAll(async () => {
   browser = await chromium.connectOverCDP('http://localhost:9222');
@@ -29,11 +29,11 @@ test('Supply < min_tx', async () => {
   await page.getByTestId(common.token_list[tk].token_name + '-input-amount').fill(amount_too_small.toString());
   let msg = common.minimumMsg(tk);
   await expect(page.locator(`text = ${msg}`)).toBeVisible();
-  const regex = new RegExp(`Supply .* ${common.token_list[tk].token_name}`);
-  await expect(page.getByRole('button', { name: regex })).toBeDisabled();
+  await common.getMarketInfo(page,common.token_list[tk].token_name )
+  console.log(await page.getByText('Minimum Amount').locator(':scope + *').textContent());
+  await expect(page.getByText('SupplyProtocolDanogo').getByRole('button',{name:'Supply'})).toBeDisabled();
   // Chụp màn hình trước khi ký ví
   await common.screenshort(page, "validate_supply");
-  // await page.pause();
 
 });
 test('Start Supply', async () => {
@@ -59,6 +59,7 @@ async function supply(page: Page, token_id: string, token_name: string, amount: 
   const regex = new RegExp(`Supply .* ${token_name}`);
   // await page.getByRole('button', { name: /Supply .* SNEK/ }).click();
   await page.getByRole('button', { name: regex }).click();
+  // có thể lỗi hoặc ký ví thành công
   await common.checkResult(defaultContext, page, "supply_error", "after_supply");
 }
 
