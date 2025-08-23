@@ -4,7 +4,7 @@ import fs from 'fs';
 import csv from 'csv-parser';
 import * as common from './Common';
 
-test('Verify Price APY', async () => {
+test('Verify Price API', async () => {
     test.setTimeout(300000);
     const apiContext = await request.newContext();
     // const listTokenPairs = await readCSV('./tests/datatest/Live_all_price.csv');
@@ -23,6 +23,7 @@ test('Verify Price APY', async () => {
             ]
         });
         const response = await apiContext.post('https://onchain-price-aggregator.tekoapis.com/api/v1/prices', {
+        // const response = await apiContext.post('https://onchain-price-aggregator-beta.tekoapis.com/api/v1/prices', {
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -75,6 +76,27 @@ test('Verify Price APY', async () => {
     common.saveToExcelFile(`./tests/test_result/check_price_${timestamp}.xlsx`, rows);
 });
 
+test('Parse list price', async () => {
+    const rowData = common.readFromExcelFile('./tests/datatest/Token_list.xlsx', 'NewToken');
+    const rows: any[] = [];
+    for (const item of rowData) {
+        let jsonData: any;
+        try {
+            jsonData = JSON.parse(item.collaterals);
+        } catch (e) {
+            throw new Error('Không parse được JSON: ' + e);
+        }
+        for (const tmp of jsonData) {
+            rows.push({
+                supply_token: item.supply_token,
+                collateral: tmp.token,
+                threshold: tmp.threshold,
+                isActive: tmp.enable
+            })
+        }
+    }
+    common.saveToExcelFile(`./tests/test_result/newToken.xlsx`, rows);
+})
 
 async function readCSV(filePath: string): Promise<any[]> {
     return new Promise((resolve, reject) => {
