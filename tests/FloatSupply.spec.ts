@@ -22,6 +22,7 @@ test('Supply < min_tx', async () => {
   let amount_too_small = parseFloat(common.token_list[tk].min_tx) - 0.001;
   console.log('✅ Start withdraw ');
   await page.goto(common.domain + common.supply_list + common.token_list[tk].token_id);
+  await page.pause();
   await page.getByTestId('supply-float').waitFor({ state: 'visible' });
   await page.getByTestId('supply-float').click();
   await page.getByRole('img', { name: 'down', exact: true }).locator('svg').click();

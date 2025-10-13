@@ -52,7 +52,7 @@ test('Verify supply APY', async () => {
         console.log(`  totalSupply:  ${totalSupply} - totalBorrow: ${totalBorrow} - liqwidSupplyAPY: ${liqwidSupplyAPY} - borrowAPR: ${borrowAPR} - supplyApy: ${supplyApy}`);
         // Tạm tính supply APY
         let calSupplyAPY = 0;
-        if (item.name == 'BTC') {
+        if (item.isSupply === false) {
             calSupplyAPY = (totalBorrow * borrowAPR / 100 * (1 - item.loanFeeRate)) / totalSupply * 100
         }
         else {
@@ -77,7 +77,7 @@ function compareNumber(number1: number, number2: number): boolean {
 
 async function callAPILiqwidSupplyAPY(apiContext: APIRequestContext, tokenId: string): Promise<APIResponse> {
     // Gọi GET API, truyền query params
-    return await apiContext.get('https://yield-aggregator.tekoapis.com/api/v1/load-supply-list-screen', {
+    return await apiContext.get(`${common.domain}/api/v1/load-supply-list-screen`, {
         headers: {
             'Content-Type': 'application/json'
         },
@@ -92,7 +92,7 @@ async function callAPILiqwidSupplyAPY(apiContext: APIRequestContext, tokenId: st
 
 async function callAPIGetBorrowAPR(apiContext: APIRequestContext, tokenId: string): Promise<APIResponse> {
     // Gọi GET API, truyền query params
-    return await apiContext.get('https://yield-aggregator.tekoapis.com/api/v1/float/load-borrow-screen', {
+    return await apiContext.get(`${common.domain}/api/v1/float/load-borrow-screen`, {
         headers: {
             'Content-Type': 'application/json'
         },
@@ -107,7 +107,7 @@ async function callAPIGetSupply(apiContext: APIRequestContext, tokenId: string):
     const requestParam = JSON.stringify({
         token: tokenId,
     });
-    return await apiContext.post('https://yield-aggregator.tekoapis.com/api/v1/float/load-supply-screen', {
+    return await apiContext.post(`${common.domain}/api/v1/float/load-supply-screen`, {
         headers: {
             'Content-Type': 'application/json'
         },

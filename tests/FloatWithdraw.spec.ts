@@ -37,7 +37,7 @@ test('validate Withdraw: withdraw lượng < min_tx', async () => {
     await expect(page.getByRole('button', { name: /Withdraw/ }).nth(1)).toBeDisabled();
     // Chụp màn hình trước khi ký ví
     await common.screenshort(page, "validate_withdraw");
-    // await page.pause();
+    await page.pause();
 });
 
 test('validate Withdraw: phần còn lại  < min_tx', async () => {

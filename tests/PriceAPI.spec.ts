@@ -5,7 +5,7 @@ import csv from 'csv-parser';
 import * as common from './Common';
 
 test('Verify Price API', async () => {
-    test.setTimeout(300000);
+    test.setTimeout(1000000);
     const apiContext = await request.newContext();
     // const listTokenPairs = await readCSV('./tests/datatest/Live_all_price.csv');
     // const listTokenPairs = await readCSV('./tests/datatest/tmp.csv');
@@ -13,6 +13,7 @@ test('Verify Price API', async () => {
     const allTokenList = common.readFromExcelFile('./tests/datatest/Token_list.xlsx', 'All float token');
     let index = 0;
     const rows: any[] = [];
+    const allPrice: any[] = [];
     for (const item of listTokenPairs) {
         const requestParam = JSON.stringify({
             tokenPairs: [{
@@ -23,7 +24,7 @@ test('Verify Price API', async () => {
             ]
         });
         const response = await apiContext.post('https://onchain-price-aggregator.tekoapis.com/api/v1/prices', {
-        // const response = await apiContext.post('https://onchain-price-aggregator-beta.tekoapis.com/api/v1/prices', {
+            // const response = await apiContext.post('https://onchain-price-aggregator-beta.tekoapis.com/api/v1/prices', {
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -67,13 +68,24 @@ test('Verify Price API', async () => {
                     });
                     console.log(`Giá bị inactive `)
                 }
+                else {
+                    allPrice.push({
+                        baseToken: item.baseToken ?? '',
+                        quoteToken: item.quoteToken ?? '',
+                        baseTokenName: common.searchTokenName(allTokenList, item.baseToken),
+                        quoteTokenName: common.searchTokenName(allTokenList, item.quoteToken),
+                        exchangeRateNum: parseFloat(responseBody.data.priceInfos.exchangeRateNum),
+                        exchangeRateDen: parseFloat(responseBody.data.priceInfos.exchangeRateDen),
+                    });
+                }
             }
             // console.log("Rows hiện tại:", rows.length, rows);
         }
     }
     // ✅ Sau vòng lặp mới ghi file Excel
     let timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    common.saveToExcelFile(`./tests/test_result/check_price_${timestamp}.xlsx`, rows);
+    // common.saveToExcelFile(`./tests/test_result/check_price_${timestamp}.xlsx`,'Error Price', rows);
+    common.saveToExcelFile2sheet(`./tests/test_result/check_price_${timestamp}.xlsx`, 'Error Price', 'valide Price', rows, allPrice);
 });
 
 test('Parse list price', async () => {
@@ -95,7 +107,7 @@ test('Parse list price', async () => {
             })
         }
     }
-    common.saveToExcelFile(`./tests/test_result/newToken.xlsx`, rows);
+    common.saveToExcelFile(`./tests/test_result/newToken.xlsx`, 'listPaireToken', rows);
 })
 
 async function readCSV(filePath: string): Promise<any[]> {
