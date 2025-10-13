@@ -2,8 +2,10 @@ import { Page, BrowserContext, expect } from '@playwright/test';
 import { Context } from 'vm';
 import * as XLSX from "xlsx";
 
-// export const domain = 'https://danogo.landing.dev.teko.vn/';
-export const domain = 'https://preview.landing.dev.teko.vn/';
+export const domain = 'https://danogo.landing.dev.teko.vn/';
+// export const domain = 'https://preview.landing.dev.teko.vn/';
+// export const domain = 'https://yield-aggregator-beta.tekoapis.com/';
+// export const domain = 'https://yield-aggregator.tekoapis.com'; // Live
 export const supply_list = 'supply-list?token=';
 export const borrow_list = 'borrow-list?token=';
 
@@ -41,12 +43,26 @@ export const USDM =
     { token_id: 'c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad.0014df105553444d', name: 'USDM', min_tx: '35', loanFeeRate: 0.1 };
 
 export const token_list_live = [
-    { token_id: 'c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad.0014df105553444d', name: 'USDM', min_tx: '35', loanFeeRate: 0.1, token_in_pool: 0 },
-    { token_id: '25c5de5f5b286073c593edfd77b48abc7a48e5a4f3d4cd9d428ff935.425443', name: 'BTC', min_tx: '35', loanFeeRate: 0.1, token_in_pool: 0 },
-    { token_id: '8db269c3ec630e06ae29f74bc39edd1f87c819f1056206e879a1cd61.446a65644d6963726f555344', name: 'DJED', min_tx: '35', loanFeeRate: 0.1, token_in_pool: 0.000001 },
-    { token_id: 'fe7c786ab321f41c654ef6c1af7b3250a613c24e4213e0425a7ae456.55534441', name: 'USDA', min_tx: '35', loanFeeRate: 0.1, token_in_pool: 0.000001 },
-    { token_id: '25c5de5f5b286073c593edfd77b48abc7a48e5a4f3d4cd9d428ff935.55534443', name: 'USDC', min_tx: '35', loanFeeRate: 0.1, token_in_pool: 0 },
-    { token_id: '25c5de5f5b286073c593edfd77b48abc7a48e5a4f3d4cd9d428ff935.55534454', name: 'USDT', min_tx: '35', loanFeeRate: 0.1, token_in_pool: 285.73299144 },
+    { token_id: 'c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad.0014df105553444d', name: 'USDM', min_tx: '35', loanFeeRate: 0.1, token_in_pool: 0, isSupply: true },
+    { token_id: '25c5de5f5b286073c593edfd77b48abc7a48e5a4f3d4cd9d428ff935.425443', name: 'BTC', min_tx: '35', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
+    { token_id: '8db269c3ec630e06ae29f74bc39edd1f87c819f1056206e879a1cd61.446a65644d6963726f555344', name: 'DJED', min_tx: '35', loanFeeRate: 0.1, token_in_pool: 1096.244817, isSupply: true },
+    { token_id: 'fe7c786ab321f41c654ef6c1af7b3250a613c24e4213e0425a7ae456.55534441', name: 'USDA', min_tx: '35', loanFeeRate: 0.1, token_in_pool: 0.000001, isSupply: true },
+    { token_id: '25c5de5f5b286073c593edfd77b48abc7a48e5a4f3d4cd9d428ff935.55534443', name: 'USDC', min_tx: '35', loanFeeRate: 0.1, token_in_pool: 0, isSupply: true },
+    { token_id: '25c5de5f5b286073c593edfd77b48abc7a48e5a4f3d4cd9d428ff935.55534454', name: 'USDT', min_tx: '35', loanFeeRate: 0.1, token_in_pool: 0, isSupply: true },
+
+    { token_id: '279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f.534e454b', name: 'Snek', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
+    { token_id: 'f13ac4d66b3ee19a6aa0f2a22298737bd907cc95121662fc971b5275.535452494b45', name: 'STRIKE', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
+    { token_id: '5d16cc1a177b5d9ba9cfa9793b07e60f1fb70fea1f8aef064415d114.494147', name: 'IAGON', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
+    { token_id: '2d9db8a89f074aa045eab177f23a3395f62ced8b53499a9e4ad46c80.464c4f57', name: 'FLOW', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
+    { token_id: '5deab590a137066fef0e56f06ef1b830f21bc5d544661ba570bdd2ae.424f44454741', name: 'BODEGA', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
+    { token_id: '29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6.4d494e', name: 'Minswap', loanFeeRate: 0.1, token_in_pool: 4600.616216, isSupply: false },
+    { token_id: 'da8c30857834c6ae7203935b89278c532b3995245295456f993e1d24.4c51', name: 'Liqwid DAO Token', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
+    { token_id: '533bb94a8850ee3ccbe483106489399112b74c905342cb1792a797a0.494e4459', name: 'Indigo DAO Token', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
+    { token_id: '577f0b1342f8f8f4aed3388b80a8535812950c7a892495c0ecdf0f1e.0014df10464c4454', name: 'FLDT', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
+    { token_id: '95a427e384527065f2f8946f5e86320d0117839a5e98ea2c0b55fb00.48554e54', name: 'HUNT', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
+    { token_id: '2852268cf6e2db42e20f2fd3125f541e5d6c5a3d70b4dda17c2daa82', name: 'The O Token', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
+    { token_id: 'ececc92aeaaac1f5b665f567b01baec8bc2771804b4c21716a87a4e3.53504c415348', name: 'SPLASH', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
+    { token_id: 'f6099832f9563e4cf59602b3351c3c5a8a7dda2d44575ef69b82cf8d', name: 'OADA', loanFeeRate: 0.1, token_in_pool: 0, isSupply: false },
 
 ]
 // End LIVE -----------------------------------------------------
@@ -119,11 +135,27 @@ function parseFormattedNumber(text: string): number {
     return Number(normalized);
 }
 
-export function saveToExcelFile(filePath: string, rows: any[]) {
+export function saveToExcelFile(filePath: string, sheetName: string, rows: any[]) {
     // Chuyển sang sheet
     const worksheet = XLSX.utils.json_to_sheet(rows);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Markets");
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+    // Xuất file Excel
+    XLSX.writeFile(workbook, filePath);
+
+    console.log(`✅ Đã ghi dữ liệu ra file ${filePath}.xlsx`);
+}
+
+export function saveToExcelFile2sheet(filePath: string, sheetName1: string, sheetName2: string, rows: any[], rows2: any[]) {
+    // Chuyển sang sheet
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName1);
+
+    const worksheet2 = XLSX.utils.json_to_sheet(rows2);
+    const workbook2 = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName2);
 
     // Xuất file Excel
     XLSX.writeFile(workbook, filePath);
