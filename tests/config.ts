@@ -10,7 +10,7 @@ export function env(env: string) {
         return {
             oracleScriptHash: '79d908a5964f87c44d867ced2ca620751edfa844e0f21685180048bd',
             url: 'https://onchain-price-preprod.dev.tekoapis.net/api/v1/prices',
-            urlMarket: 'https://crypto-admin-bff.dev.tekoapis.net/api/v1/float-lending/markets',
+            urlMarket: 'https://crypto-admin-preprod-bff.dev.tekoapis.net/api/v1/float-lending/markets',
         }
     else {
         return {

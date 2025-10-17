@@ -1,12 +1,12 @@
 import * as XLSX from "xlsx";
 import { test, expect, request } from "@playwright/test";
-import * as common from './Common';
+import * as config from './config';
 
 test('Verify MarketInfo APY', async () => {
     const apiContext = await request.newContext();
-    // const allTokenList = common.readFromExcelFile('./tests/datatest/Token_list.xlsx', 'All float token');
-    const url = 'https://crypto-admin-bff.dev.tekoapis.net/api/v1/float-lending/markets';
-    const response = await apiContext.get(url, {
+    const env = config.env('PREVIEW');
+    // const env = config.env('PREPROD');
+    const response = await apiContext.get(env.urlMarket, {
         headers: {
             'Content-Type': 'application/json'
         },
@@ -39,7 +39,8 @@ test('Verify MarketInfo APY', async () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Markets");
     // Xuất file Excel
-    XLSX.writeFile(workbook, "./tests/test_result/markets_preview.xlsx");
+    // XLSX.writeFile(workbook, "./tests/test_result/markets_preprod.xlsx");
+    XLSX.writeFile(workbook, "./tests/test_result/markets_preview1.xlsx");
     console.log("✅ Đã ghi dữ liệu ra file markets.xlsx");
 });
 
