@@ -10,7 +10,7 @@ export const supply_list = 'supply-list?token=';
 export const borrow_list = 'borrow-list?token=';
 
 /* trước khi chạy scrip cần mở browser bằng lệnh 
-C:\Program Files (x86)\Google\Chrome\Application>start chrome.exe --remote-debugging-port=9222 --user-data-dir="C:\Users\Teko\AppData\Local\Google\Chrome\User Data\Profile 47"
+C:\Program Files (x86)\Google\Chrome\Application>start chrome.exe --remote-debugging-port=9222 --user-data-dir="C:\Users\Dung.NTM\AppData\Local\Google\Chrome\User Data\Profile 5"
 Trong đó profile 47 đã cài đặt trước extention ví.
 */
 

@@ -1,11 +1,13 @@
 import * as XLSX from "xlsx";
 import { test, expect, request } from "@playwright/test";
-import * as config from './config';
+import * as config from '../config';
 
 test('Verify MarketInfo APY', async () => {
     const apiContext = await request.newContext();
     const env = config.env('PREVIEW');
     // const env = config.env('PREPROD');
+    // const env = config.env('MAIN_OLD_POOL');
+    // const env = config.env('MAIN_NEW_UI');
     const response = await apiContext.get(env.urlMarket, {
         headers: {
             'Content-Type': 'application/json'
@@ -17,11 +19,6 @@ test('Verify MarketInfo APY', async () => {
 
     responseMarketInfo.data.markets.forEach((market: any) => {
         market.supportedCollaterals.forEach((col: any) => {
-            // let searchTokenName = common.searchTokenName(allTokenList, col.token);
-            let compareTokenName = '';
-            // if (searchTokenName.toUpperCase() !== col.tokenName.toUpperCase()) {
-            //     compareTokenName = searchTokenName;
-            // }
             rows.push({
                 Pool_id: market.poolId,
                 Token: market.token,
@@ -30,7 +27,6 @@ test('Verify MarketInfo APY', async () => {
                 collateralTokenName: col.tokenName,
                 collateralIsEnable: col.isEnable,
                 liquidationThreshold: col.liquidationThreshold,
-                compareTokenName: compareTokenName
             });
         });
     });
@@ -40,7 +36,8 @@ test('Verify MarketInfo APY', async () => {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Markets");
     // Xuất file Excel
     // XLSX.writeFile(workbook, "./tests/test_result/markets_preprod.xlsx");
-    XLSX.writeFile(workbook, "./tests/test_result/markets_preview1.xlsx");
+    // XLSX.writeFile(workbook, "./tests/test_result/markets_main_old_pool.xlsx");
+    XLSX.writeFile(workbook, `./tests/test_result/market_${env.resultName}.xlsx`);
     console.log("✅ Đã ghi dữ liệu ra file markets.xlsx");
 });
 

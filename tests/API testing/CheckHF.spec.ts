@@ -1,5 +1,5 @@
 import { test, expect, request, APIRequestContext, APIResponse } from '@playwright/test';
-import * as config from './config';
+import * as config from '../config';
 
 
 

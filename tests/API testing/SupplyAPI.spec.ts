@@ -1,5 +1,6 @@
 import { test, expect, request, APIRequestContext, APIResponse } from '@playwright/test';
-import * as common from './Common';
+import * as common from '../Common';
+import * as config from '../config';
 
 test('verify supply APY của ADA', async () => {
     const apiContext = await request.newContext();
@@ -107,6 +108,7 @@ async function callAPIGetSupply(apiContext: APIRequestContext, tokenId: string):
     const requestParam = JSON.stringify({
         token: tokenId,
     });
+     const env = config.env('MAIN_OLD_POOL');
     return await apiContext.post(`${common.domain}/api/v1/float/load-supply-screen`, {
         headers: {
             'Content-Type': 'application/json'

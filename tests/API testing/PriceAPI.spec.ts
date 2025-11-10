@@ -2,7 +2,7 @@ import { test, expect, request } from '@playwright/test';
 import * as XLSX from "xlsx";
 import fs from 'fs';
 import csv from 'csv-parser';
-import * as common from './Common';
+import * as common from '../Common';
 
 test('Verify Price API', async () => {
     test.setTimeout(1000000);
