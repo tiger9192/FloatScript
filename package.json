@@ -6,13 +6,18 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "devDependencies": {
-    "@playwright/test": "^1.53.0",
+    "@playwright/test": "^1.56.1",
     "@types/node": "^24.0.3"
   },
   "dependencies": {
     "csv-parser": "^3.2.0",
+    "node-cron": "^4.2.1",
+    "playwright": "^1.56.1",
     "xlsx": "^0.18.5"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "description": ""
 }

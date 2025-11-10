@@ -4,8 +4,8 @@ import * as config from '../config';
 
 test('Verify MarketInfo APY', async () => {
     const apiContext = await request.newContext();
-    const env = config.env('PREVIEW');
-    // const env = config.env('PREPROD');
+    // const env = config.env('PREVIEW');
+    const env = config.env('PREPROD');
     // const env = config.env('MAIN_OLD_POOL');
     // const env = config.env('MAIN_NEW_UI');
     const response = await apiContext.get(env.urlMarket, {
@@ -35,10 +35,10 @@ test('Verify MarketInfo APY', async () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Markets");
     // Xuất file Excel
-    // XLSX.writeFile(workbook, "./tests/test_result/markets_preprod.xlsx");
-    // XLSX.writeFile(workbook, "./tests/test_result/markets_main_old_pool.xlsx");
-    XLSX.writeFile(workbook, `./tests/test_result/market_${env.resultName}.xlsx`);
-    console.log("✅ Đã ghi dữ liệu ra file markets.xlsx");
+    // XLSX.writeFile(workbook, "test-results/markets_preprod.xlsx");
+    // XLSX.writeFile(workbook, "test-results/markets_main_old_pool.xlsx");
+    XLSX.writeFile(workbook, `test-results/market_${env.resultName}.xlsx`);
+    console.log("✅ Đã ghi dữ liệu ra file markets excel");
 });
 
 test('Verify API load_supply_list_screen ', async () => {
@@ -71,6 +71,6 @@ test('Verify API load_supply_list_screen ', async () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Markets");
     // Xuất file Excel
-    XLSX.writeFile(workbook, "./tests/test_result/supply_list_ADA.xlsx");
+    XLSX.writeFile(workbook, "test-results/supply_list_ADA.xlsx");
     console.log("✅ Đã ghi dữ liệu ra file supply_list_ADA.xlsx");
 });

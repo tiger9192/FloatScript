@@ -3,7 +3,7 @@ import cron from 'node-cron';
 import fs from 'fs';
 import path from 'path';
 
-const logFilePath = path.resolve('./api_check.log');
+const logFilePath = path.resolve('test-results/api_check.log');
 
 async function checkApiWithUrl(url, token_name) {
 

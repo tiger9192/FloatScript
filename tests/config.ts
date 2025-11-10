@@ -11,7 +11,8 @@ export function env(env: string) {
         }
     else if (env === 'PREPROD')
         return {
-            oracleScriptHash: '79d908a5964f87c44d867ced2ca620751edfa844e0f21685180048bd',
+            // oracleScriptHash: '79d908a5964f87c44d867ced2ca620751edfa844e0f21685180048bd',
+             oracleScriptHash: '25bc9716547b91ad00c5250a828be8d4c95f1e69eb3b42a2cd164b16',
             urlPrice: 'https://onchain-price-preprod.dev.tekoapis.net/api/v1/prices',
             urlMarket: 'https://crypto-admin-preprod-bff.dev.tekoapis.net/api/v1/float-lending/markets',
             yieldUrl: '',

@@ -10,6 +10,7 @@ test('Verify Price API', async () => {
     // const listTokenPairs = await readCSV('./tests/datatest/Live_all_price.csv');
     // const listTokenPairs = await readCSV('./tests/datatest/tmp.csv');
     const listTokenPairs = common.readFromExcelFile('./tests/datatest/Token_list.xlsx', 'ListTokenPairs');
+
     const allTokenList = common.readFromExcelFile('./tests/datatest/Token_list.xlsx', 'All float token');
     let index = 0;
     const rows: any[] = [];
@@ -84,8 +85,8 @@ test('Verify Price API', async () => {
     }
     // ✅ Sau vòng lặp mới ghi file Excel
     let timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    // common.saveToExcelFile(`./tests/test_result/check_price_${timestamp}.xlsx`,'Error Price', rows);
-    common.saveToExcelFile2sheet(`./tests/test_result/check_price_${timestamp}.xlsx`, 'Error Price', 'valide Price', rows, allPrice);
+    // common.saveToExcelFile(`test-results/check_price_${timestamp}.xlsx`,'Error Price', rows);
+    common.saveToExcelFile2sheet(`test-results/check_price_${timestamp}.xlsx`, 'Error Price', 'valide Price', rows, allPrice);
 });
 
 test('Parse list price', async () => {
@@ -107,7 +108,7 @@ test('Parse list price', async () => {
             })
         }
     }
-    common.saveToExcelFile(`./tests/test_result/newToken.xlsx`, 'listPaireToken', rows);
+    common.saveToExcelFile(`test-results/newToken.xlsx`, 'listPaireToken', rows);
 })
 
 async function readCSV(filePath: string): Promise<any[]> {

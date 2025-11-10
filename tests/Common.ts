@@ -155,10 +155,11 @@ export function saveToExcelFile2sheet(filePath: string, sheetName1: string, shee
 
     const worksheet2 = XLSX.utils.json_to_sheet(rows2);
     const workbook2 = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName2);
+    XLSX.utils.book_append_sheet(workbook2, worksheet2, sheetName2);
 
     // Xuất file Excel
     XLSX.writeFile(workbook, filePath);
+    XLSX.writeFile(workbook2, filePath);
 
     console.log(`✅ Đã ghi dữ liệu ra file ${filePath}.xlsx`);
 }
@@ -187,8 +188,8 @@ export function searchTokenName(data: any, token: string): string {
             break;
         }
         else {
-            if (token === row.Token) {
-                tokenName = row.TokenName;
+            if (token === row.collateralToken) {
+                tokenName = row.collateralTokenName;
                 break;
             };
         };
