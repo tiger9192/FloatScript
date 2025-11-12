@@ -3,11 +3,13 @@ export function env(env: string) {
     if (env === 'PREVIEW')
         return {
             oracleScriptHash: 'a2fa8564c279ca144d69bbbd37057f5d3d42e59555bc3bfb874919f6',
+            //  oracleScriptHash: '6ffa215ebd214d2d804dbb425f0c708262a3bc635f3ce2391b845748',
             urlPrice: 'https://onchain-price-aggregator.dev.tekoapis.net/api/v1/prices',
             urlMarket: 'https://crypto-admin-bff.dev.tekoapis.net/api/v1/float-lending/markets',
             yieldUrl: '',
             resultName: 'PREVIEW',
             lendingUrl:'',
+            usdm:'',
         }
     else if (env === 'PREPROD')
         return {
@@ -18,6 +20,7 @@ export function env(env: string) {
             yieldUrl: '',
             resultName: 'PREPROD',
             lendingUrl:'https://danogo.dev.teko.vn/',
+            usdm:'834a15101873b4e1ddfaa830df46792913995d8738dcde34eda27905.665553444d',
         }
     else if (env === 'MAIN_OLD_POOL') {
         return {
@@ -27,6 +30,7 @@ export function env(env: string) {
             yieldUrl: 'https://yield-aggregator.tekoapis.com/',
             resultName: 'MAIN_OLD_POOL',
             lendingUrl:'',
+            usdm:'',
         }
     }
     else if (env === 'MAIN_NEW_POOL') {
@@ -37,6 +41,7 @@ export function env(env: string) {
             yieldUrl: 'https://float-lending-bff.tekoapis.com/',
             resultName: 'MAIN_NEW_POOL',
             lendingUrl:'',
+            usdm:'',
         }
     }
     else {
@@ -47,6 +52,7 @@ export function env(env: string) {
             yieldUrl: '',
             resultName: '',
             lendingUrl:'',
+            usdm:'',
         }
     }
 }

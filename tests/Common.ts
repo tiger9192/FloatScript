@@ -147,19 +147,18 @@ export function saveToExcelFile(filePath: string, sheetName: string, rows: any[]
     console.log(`✅ Đã ghi dữ liệu ra file ${filePath}.xlsx`);
 }
 
-export function saveToExcelFile2sheet(filePath: string, sheetName1: string, sheetName2: string, rows: any[], rows2: any[]) {
+export function saveToExcelFile2sheet(filePath: string, sheetNameError: string, sheetNameSuccess: string, rowsError: any[], rowsSuccess: any[]) {
     // Chuyển sang sheet
-    const worksheet = XLSX.utils.json_to_sheet(rows);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName1);
 
-    const worksheet2 = XLSX.utils.json_to_sheet(rows2);
-    const workbook2 = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook2, worksheet2, sheetName2);
+    const errorSheet = XLSX.utils.json_to_sheet(rowsError);
+
+    const successSheet = XLSX.utils.json_to_sheet(rowsSuccess);
+    XLSX.utils.book_append_sheet(workbook, successSheet, "success");
+    XLSX.utils.book_append_sheet(workbook, errorSheet, "error");
 
     // Xuất file Excel
     XLSX.writeFile(workbook, filePath);
-    XLSX.writeFile(workbook2, filePath);
 
     console.log(`✅ Đã ghi dữ liệu ra file ${filePath}.xlsx`);
 }
@@ -181,6 +180,7 @@ export function readFromExcelFile(filePath: string, sheetName: string): any[] {
 
 export function searchTokenName(data: any, token: string): string {
     let tokenName = 'NA'
+    // console.log(`   Token ${token}`);
     for (const row of data) {
         // console.log(`token ${token} -------- row.Token ${row.Token}`);
         if (token === null || token === '') {
@@ -190,9 +190,28 @@ export function searchTokenName(data: any, token: string): string {
         else {
             if (token === row.collateralToken) {
                 tokenName = row.collateralTokenName;
+                // console.log(`   Search token collateralToken ${row.collateralToken} collateralTokenName ${row.collateralTokenName}`);
                 break;
             };
         };
     };
     return tokenName;
+}
+
+export function searchAssetToken(data: any, tokenName: string): string {
+    let token = 'NA'
+    for (const row of data) {
+        // console.log(`token ${token} -------- row.Token ${row.Token}`);
+        if (tokenName === null || tokenName === '') {
+            token = '';
+            break;
+        }
+        else {
+            if (tokenName === row.collateralTokenName) {
+                token = row.collateralToken;
+                break;
+            };
+        };
+    };
+    return token;
 }

@@ -4,8 +4,8 @@ import * as config from '../config';
 
 test('Verify MarketInfo APY', async () => {
     const apiContext = await request.newContext();
-    // const env = config.env('PREVIEW');
-    const env = config.env('PREPROD');
+    const env = config.env('PREVIEW');
+    // const env = config.env('PREPROD');
     // const env = config.env('MAIN_OLD_POOL');
     // const env = config.env('MAIN_NEW_UI');
     const response = await apiContext.get(env.urlMarket, {
