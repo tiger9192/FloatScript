@@ -2,7 +2,6 @@ import { test, expect, chromium, Browser, Page, request } from '@playwright/test
 import * as config from '../config';
 import { Context } from 'vm';
 import * as common from '../Common';
-import { promises } from 'dns';
 
 let browser: Browser;
 let defaultContext: Context;

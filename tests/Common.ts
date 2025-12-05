@@ -90,7 +90,7 @@ export async function checkResult(defaultContext: Context, page: Page, imgNameEr
     const errorMsg = page.getByRole('alert').locator('text =/Get support here/');
     const result = await Promise.race([
         // Trường hợp mở trang mới
-        defaultContext.waitForEvent('page').then((newPage) => ({ type: 'new-page', newPage })),
+        defaultContext.waitForEvent('page').then((newPage: any) => ({ type: 'new-page', newPage })),
 
         // Trường hợp hiện lỗi
         errorMsg.waitFor({ state: 'visible', timeout: 10000 }).then(() => ({ type: 'error' })),
@@ -103,11 +103,15 @@ export async function checkResult(defaultContext: Context, page: Page, imgNameEr
 
         const newPage = result.newPage;
         await signLaceWallet(newPage);
+        // await page.pause();
         // Trở về màn supply
-        await page.getByRole('alert').getByRole('link').isVisible({ timeout: 30000 });
-        const txurl = await page.getByRole('alert').getByRole('link').getAttribute('href');
+        await page.getByText('SUCCESS', { exact: true }).waitFor({ state: 'visible', timeout: 90000 });
+        console.log('✅ Thao tác thành công');
+        // await page.getByRole('alert').getByRole('link').isVisible({ timeout: 30000 });
+        // const txurl = await page.getByRole('alert').getByRole('link').getAttribute('href');
         await screenshort(page, imgNameSuc);
-        console.log('Tx hash: ' + txurl);
+        await page.getByRole('dialog', { name: 'SUCCESS' }).getByRole('button').click();
+        // console.log('Tx hash: ' + txurl);
     }
 }
 
@@ -154,8 +158,8 @@ export function saveToExcelFile2sheet(filePath: string, sheetNameError: string, 
     const errorSheet = XLSX.utils.json_to_sheet(rowsError);
 
     const successSheet = XLSX.utils.json_to_sheet(rowsSuccess);
-    XLSX.utils.book_append_sheet(workbook, successSheet, "success");
-    XLSX.utils.book_append_sheet(workbook, errorSheet, "error");
+    XLSX.utils.book_append_sheet(workbook, successSheet,sheetNameSuccess);
+    XLSX.utils.book_append_sheet(workbook, errorSheet, sheetNameError);
 
     // Xuất file Excel
     XLSX.writeFile(workbook, filePath);
