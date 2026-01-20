@@ -5,8 +5,9 @@ import * as config from '../config';
 test('Verify MarketInfo APY', async () => {
     const apiContext = await request.newContext();
     // const env = config.env('PREVIEW');
-    // const env = config.env('PREPROD');
-    const env = config.env('MAIN_OLD_POOL');
+    const env = config.env('PREPROD');
+    // const env = config.env('PREPROD_FLOAT');
+    // const env = config.env('MAIN_OLD_POOL');
     // const env = config.env('MAIN_NEW_POOL');
     const response = await apiContext.get(env.urlMarket, {
         headers: {
@@ -37,7 +38,7 @@ test('Verify MarketInfo APY', async () => {
     // Xuất file Excel
     // XLSX.writeFile(workbook, "test-results/markets_preprod.xlsx");
     // XLSX.writeFile(workbook, "test-results/markets_main_old_pool.xlsx");
-    XLSX.writeFile(workbook, `test-results/market_4_${env.resultName}.xlsx`);
+    XLSX.writeFile(workbook, `test-results/market_2312_${env.resultName}.xlsx`);
     console.log("✅ Đã ghi dữ liệu ra file markets excel");
 });
 

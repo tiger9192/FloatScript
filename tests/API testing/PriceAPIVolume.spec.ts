@@ -16,10 +16,10 @@ test('Verify Price API Preview', async () => {
 });
 
 test('Verify Price API PREPROD', async () => {
-    test.setTimeout(10000);
+    test.setTimeout(1000000);
     const env = config.env('PREPROD');
-    const fileName = 'test-results/market_PREPROD.xlsx';
-    const sheetName = 'ListCheckPrice';
+    const fileName = 'test-results/Danh sách cặp giá trên Preprod.xlsx';
+    const sheetName = 'DS cặp giá';
     await callAPIPriceDenominator(fileName, sheetName, env);
 });
 
@@ -28,6 +28,14 @@ test('Verify Price API market_MAIN_NEW_POOL', async () => {
     const env = config.env('MAIN_NEW_POOL');
     const fileName = 'test-results/market_MAIN_NEW_POOL.xlsx';
     const sheetName = 'VolumePrice'
+    await callAPIPriceDenominator(fileName, sheetName, env);
+});
+
+test('Verify Price API market_MAIN_POC_POOL', async () => {
+    test.setTimeout(9000000);
+    const env = config.env('MAIN_POC_POOL');
+    const fileName = 'test-results/market_2312_MAIN_OLD_POOL.xlsx';
+    const sheetName = 'Markets'
     await callAPIPriceDenominator(fileName, sheetName, env);
 });
 
@@ -79,15 +87,32 @@ test('Compare Price V1 POV ', async () => {
     await callAPIPriceCompare2VersionNoDen(fileName, sheetName, env1, env3);
 });
 
-test('Compare Price V2 POV ', async () => {
+test('Compare Price V2-Prod vs Prod -V1', async () => {
     test.setTimeout(9000000);
-    const fileName = 'test-results/AllTokenV3.xlsx';
-    const sheetName = 'V2-New pool';
-    const env2 = config.priceEnv('MAIN_BETA_POOL');
-    const env3 = config.priceEnv('MAIN_POC_V2');
+    const fileName = 'test-results/market_2312_MAIN_OLD_POOL.xlsx';
+    const sheetName = 'Float markets';
+    const env2 = config.priceEnv('MAIN_OLD_POOL');
+    const env3 = config.priceEnv('MAIN_V2_PROD_V1');
     await callAPIPriceCompare2VersionDen(fileName, sheetName, env2, env3);
 });
 
+test('Compare Price V2-Prod vs Prod -V2', async () => {
+    test.setTimeout(9000000);
+    const fileName = 'test-results/market_2312_MAIN_OLD_POOL.xlsx';
+    const sheetName = 'Leverage markets';
+    const env2 = config.priceEnv('MAIN_NEW_POOL_V2');
+    const env3 = config.priceEnv('MAIN_V2_PROD_V2');
+    await callAPIPriceCompare2VersionDen(fileName, sheetName, env2, env3);
+});
+
+test('Compare Price V2-Prod vs Prod -V3', async () => {
+    test.setTimeout(9000000);
+    const fileName = 'test-results/market_2312_MAIN_OLD_POOL.xlsx';
+    const sheetName = 'Leverage markets';
+    const env2 = config.priceEnv('MAIN_NEW_POOL_V3');
+    const env3 = config.priceEnv('MAIN_V2_PROD_V2');
+    await callAPIPriceCompare2VersionDen(fileName, sheetName, env2, env3);
+});
 
 // Có dùng
 async function callAPIPriceDenominator(fileName: string, sheetName: string, env: any) {
@@ -165,8 +190,11 @@ async function callAPIPriceCompare2VersionDen(fileName: string, sheetName: strin
     const allPrice: any[] = [];
     for (const item of listTokenPairs) {
 
-        const responseV1 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', item.denominator.toString() ?? '', env1.oracleScriptHash, env1.urlPrice);
-        const responseV2 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', item.denominator.toString() ?? '', env2.oracleScriptHash, env2.urlPrice);
+        // const responseV1 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', item.denominator.toString() ?? '', env1.oracleScriptHash, env1.urlPrice);
+        // const responseV2 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', item.denominator.toString() ?? '', env2.oracleScriptHash, env2.urlPrice);
+
+         const responseV1 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', '', env1.oracleScriptHash, env1.urlPrice);
+        const responseV2 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', '', env2.oracleScriptHash, env2.urlPrice);
 
         console.log(`Cặp giá ${++index}: ${item.collateralToken} - ${item.Token} - denomination ${item.denominator}`);
         let resultV1 = await readResponse(responseV1);

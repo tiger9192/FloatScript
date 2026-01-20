@@ -158,7 +158,7 @@ export function saveToExcelFile2sheet(filePath: string, sheetNameError: string, 
     const errorSheet = XLSX.utils.json_to_sheet(rowsError);
 
     const successSheet = XLSX.utils.json_to_sheet(rowsSuccess);
-    XLSX.utils.book_append_sheet(workbook, successSheet,sheetNameSuccess);
+    XLSX.utils.book_append_sheet(workbook, successSheet, sheetNameSuccess);
     XLSX.utils.book_append_sheet(workbook, errorSheet, sheetNameError);
 
     // Xuất file Excel
@@ -179,6 +179,34 @@ export function readFromExcelFile(filePath: string, sheetName: string): any[] {
     // Chuyển thành JSON
     const rows: any[] = XLSX.utils.sheet_to_json(worksheet);
     return rows;
+
+}
+
+export function readExcelFileToTable(filePath: string, sheetName: string): any[] {
+    const workbook = XLSX.readFile(filePath);
+    let columnIndex = 0
+    // Lấy sheet đầu tiên
+    if (!workbook.SheetNames.includes(sheetName)) {
+        throw new Error(`Sheet "${sheetName}" không tồn tại trong file Excel`);
+    }
+    const worksheet = workbook.Sheets[sheetName];
+
+    // Chuyển thành JSON
+    const range = XLSX.utils.decode_range(worksheet["!ref"]!);
+    const result: string[] = [];
+    for (let row = range.s.r + 1; row <= range.e.r; row++) {
+        const cellAddress = XLSX.utils.encode_cell({
+            r: row,
+            c: columnIndex
+        });
+
+        const cell = worksheet[cellAddress];
+        if (!cell) continue;
+
+        // Ưu tiên raw value → giữ ký tự đặc biệt
+        result.push(String(cell.v));
+    }
+    return result;
 
 }
 
