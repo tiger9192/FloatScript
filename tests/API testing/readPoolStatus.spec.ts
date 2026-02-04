@@ -7,6 +7,7 @@ import * as common from '../Common';
 test('Parse list pool', async () => {
     const rowData = common.readExcelFileToTable('./tests/datatest/listPools.xlsx', 'Pools');
     const listpool: any[] = [];
+    let listPoolInverse: any[] = [];
     for (const item of rowData) {
         // console.log('----- ' + item);
         let jsonData: any;
@@ -29,15 +30,18 @@ test('Parse list pool', async () => {
 
     }
     console.log(listpool.length);
-     let timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    common.saveToExcelFile(`./test-results/listPools_parsed_${timestamp}.xlsx`, 'PoolsInfo', listpool);
+    listPoolInverse = getPoolInverse(listpool);
+    let timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    // common.saveToExcelFile(`./test-results/listPools_parsed_${timestamp}.xlsx`, 'PoolsInfo', listpool);
+    common.saveToExcelFile2sheet(`./test-results/listPools_parsed_${timestamp}.xlsx`, 'PoolsInfo', 'PoolsInfo_Inverse',listpool, listPoolInverse);
 })
 
 type PoolInfo = {
-    
-    outref: string;
+
+
     tokenA: string;
     tokenB: string;
+    outref: string;
     validityNft: string;
     x: number;
     y: number;
@@ -47,6 +51,28 @@ type PoolInfo = {
     minX: number;
     minY: number;
 };
+
+function getPoolInverse(poolInfo: any[]): any[] {
+    let listPoolInverse: any[] = [];
+    let poolInverse: PoolInfo; 
+    for (const key of poolInfo) {
+        poolInverse = {
+            tokenA: key.tokenB,
+            tokenB: key.tokenA,
+            validityNft: key.validityNft,
+            outref: key.outref,
+            x: key.y,
+            y: key.x,
+            lpFee: key.lpFee, // đây là số % rồi
+            lowerPrice: key.upperPrice ? 1 / key.upperPrice : 0,
+            upperPrice: key.lowerPrice ? 1 / key.lowerPrice : 0,
+            minX: key.minY,
+            minY: key.minX
+        };
+        listPoolInverse.push(poolInverse)
+    }
+    return listPoolInverse;
+}
 
 async function splashPool(jsonData: any): Promise<PoolInfo> {
 
@@ -68,7 +94,7 @@ async function splashPool(jsonData: any): Promise<PoolInfo> {
         }
     }
     else if (tokenB === '') {
-        
+
         tokenBAmount = jsonData.result.pool.coin;
         for (const asset of jsonData.result.pool.multiAssets) {
             let assetName = asset.policyId + '.' + asset.assets[0].name;
@@ -87,10 +113,10 @@ async function splashPool(jsonData: any): Promise<PoolInfo> {
     let royaltyFee = jsonData.result.pool.royaltyFee;
 
     poolInfo = {
-        validityNft: jsonData.result.pool.validityNft,
-        outref: jsonData.result.pool.outRef,
         tokenA: tokenA,
         tokenB: tokenB,
+        validityNft: jsonData.result.pool.validityNft,
+        outref: jsonData.result.pool.outRef,
         x: tokenAAmount - treasuryA - royaltyA,
         y: tokenBAmount - treasuryB - royaltyB,
         lpFee: ((100000 - (poolFee - treasuryFee - royaltyFee)) / 100000), // đây là số % rồi
@@ -99,6 +125,7 @@ async function splashPool(jsonData: any): Promise<PoolInfo> {
         minX: 0,
         minY: 0
     };
+
     console.log(`Splash Pool Info ${JSON.stringify(poolInfo)}`);
     return poolInfo;
 }
@@ -144,10 +171,10 @@ async function concentratedPool(jsonData: any): Promise<PoolInfo> {
     let sqrtPriceUpperNum = jsonData.result.pool.sqrtPriceUpperNum;
     let sqrtPriceUpperDen = jsonData.result.pool.sqrtPriceUpperDen;
     poolInfo = {
-        validityNft: jsonData.result.pool.validityNft,
-        outref: jsonData.result.pool.outRef,
         tokenA: tokenA,
         tokenB: tokenB,
+        validityNft: jsonData.result.pool.validityNft,
+        outref: jsonData.result.pool.outRef,
         x: tokenAAmount - platformFeeA,
         y: tokenBAmount - platformFeeB,
         lpFee: poolFeeRate / 10000, // đây là số % rồi

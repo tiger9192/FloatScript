@@ -1,14 +1,15 @@
 import * as XLSX from "xlsx";
 import { test, expect, request } from "@playwright/test";
 import * as config from '../config';
+import * as common from '../Common';
 
 test('Verify MarketInfo APY', async () => {
     const apiContext = await request.newContext();
     // const env = config.env('PREVIEW');
-    const env = config.env('PREPROD');
+    // const env = config.env('PREPROD');
     // const env = config.env('PREPROD_FLOAT');
     // const env = config.env('MAIN_OLD_POOL');
-    // const env = config.env('MAIN_NEW_POOL');
+    const env = config.env('MAIN_NEW_POOL');
     const response = await apiContext.get(env.urlMarket, {
         headers: {
             'Content-Type': 'application/json'
@@ -31,16 +32,22 @@ test('Verify MarketInfo APY', async () => {
             });
         });
     });
-    // Chuyển sang sheet
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Markets");
-    // Xuất file Excel
-    // XLSX.writeFile(workbook, "test-results/markets_preprod.xlsx");
-    // XLSX.writeFile(workbook, "test-results/markets_main_old_pool.xlsx");
-    XLSX.writeFile(workbook, `test-results/market_2312_${env.resultName}.xlsx`);
+    const listToken = await readTokenList(rows);
+    let timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    common.saveToExcelFile2sheet(`test-results/market_${env.resultName}_${timestamp}.xlsx`, 'Market info', 'List token', rows, listToken);
     console.log("✅ Đã ghi dữ liệu ra file markets excel");
 });
+
+async function readTokenList(marketList: any[]): Promise<any[]> {
+    let allToken: any[] = [];
+    marketList.forEach((market: any) => {
+        allToken.push({ token: market.token, tokenName: market.tokenName });
+        allToken.push({ token: market.collateralToken, tokenName: market.collateralTokenName });
+    });
+
+    const tokenList = [...new Map(allToken.map(item => [item.token, item])).values()];
+    return tokenList;
+}
 
 test('Verify API load_supply_list_screen ', async () => {
     const apiContext = await request.newContext();

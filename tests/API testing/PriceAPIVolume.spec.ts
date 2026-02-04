@@ -6,113 +6,25 @@ import * as common from '../Common';
 import * as config from '../config';
 
 
-
-test('Verify Price API Preview', async () => {
-    test.setTimeout(1000000);
-    const fileName = 'test-results/market_PREVIEW.xlsx';
-    const sheetName = 'ListCheckPrice';
-    const env = config.env('PREVIEW');
-    await callAPIPriceDenominator(fileName, sheetName, env);
-});
-
-test('Verify Price API PREPROD', async () => {
-    test.setTimeout(1000000);
-    const env = config.env('PREPROD');
-    const fileName = 'test-results/Danh sách cặp giá trên Preprod.xlsx';
-    const sheetName = 'DS cặp giá';
-    await callAPIPriceDenominator(fileName, sheetName, env);
-});
-
-test('Verify Price API market_MAIN_NEW_POOL', async () => {
+test('Compare Price Main V1 Vs Beta V3.0 ', async () => {
     test.setTimeout(9000000);
-    const env = config.env('MAIN_NEW_POOL');
-    const fileName = 'test-results/market_MAIN_NEW_POOL.xlsx';
-    const sheetName = 'VolumePrice'
-    await callAPIPriceDenominator(fileName, sheetName, env);
+    const inputFileName = './tests/datatest/ListPriceFloat.xlsx';
+    const inputSheetName = 'Market info';
+    const env1 = config.priceEnv('MAIN_V1');
+    const env3 = config.priceEnv('BETA_V3.0');
+    await callAPIPriceCompare2Version(inputFileName, inputSheetName, env1, env3, 'MainV1_vs_BetaV3.0');
 });
 
-test('Verify Price API market_MAIN_POC_POOL', async () => {
+test('Compare Price Main V3.1 Vs Beta V3.3', async () => {
     test.setTimeout(9000000);
-    const env = config.env('MAIN_POC_POOL');
-    const fileName = 'test-results/market_2312_MAIN_OLD_POOL.xlsx';
-    const sheetName = 'Markets'
-    await callAPIPriceDenominator(fileName, sheetName, env);
+    const inputFileName = './tests/datatest/ListPriceLeverage.xlsx';
+    const inputSheetName = 'Market info';
+    const env2 = config.priceEnv('MAIN_V3.1');
+    const env3 = config.priceEnv('BETA_V3.3');
+    await callAPIPriceCompare2Version(inputFileName, inputSheetName, env2, env3, 'MainV3.1_vs_BetaV3.3');
 });
 
 
-test('Compare Price V1, V2, V3 MAIN_NEW_POOL', async () => {
-    test.setTimeout(9000000);
-    const env = config.env('MAIN_NEW_POOL');
-    const fileName = 'test-results/market_MAIN_NEW_POOL.xlsx';
-    const sheetName = 'AllV2'
-    // await callAPIPriceCompare3Version(fileName, sheetName, env);
-});
-
-test('check dtoken price MAIN_NEW_POOL', async () => {
-    test.setTimeout(9000000);
-    const env = config.env('MAIN_NEW_POOL');
-    const fileName = 'test-results/market_MAIN_NEW_POOL.xlsx';
-    const sheetName = 'CheckdToken'
-    await checkdTokenV3(fileName, sheetName, env);
-});
-
-
-test('Compare Price V1, V2, V3 theo USDM MAIN_NEW_POOL', async () => {
-    test.setTimeout(9000000);
-    const env = config.env('MAIN_NEW_POOL');
-    const fileName = 'test-results/market_MAIN_NEW_POOL.xlsx';
-    const sheetName = 'PriceUSDM'
-    // await callAPIPriceCompare3Version(fileName, sheetName, env);
-});
-
-
-test('Compare Price V1, V2 main, V3 POV ', async () => {
-    test.setTimeout(9000000);
-    const env = config.env('MAIN_POV');
-    const fileName = 'test-results/market_2_MAIN_NEW_POOL.xlsx';
-    const sheetName = 'All';
-    const env1 = config.priceEnv('MAIN_OLD_POOL');
-    const env2 = config.priceEnv('MAIN_NEW_POOL');
-    const env3 = config.priceEnv('MAIN_POV');
-    await callAPIPriceCompare3VersionNoDen(fileName, sheetName, env1, env2, env3);
-});
-
-test('Compare Price V1 POV ', async () => {
-    test.setTimeout(9000000);
-    const env = config.env('MAIN_POV');
-    const fileName = 'test-results/AllTokenV3.xlsx';
-    const sheetName = 'V1-Old pool';
-    const env1 = config.priceEnv('MAIN_OLD_POOL');
-    const env3 = config.priceEnv('MAIN_POC_V1');
-    await callAPIPriceCompare2VersionNoDen(fileName, sheetName, env1, env3);
-});
-
-test('Compare Price V2-Prod vs Prod -V1', async () => {
-    test.setTimeout(9000000);
-    const fileName = 'test-results/market_2312_MAIN_OLD_POOL.xlsx';
-    const sheetName = 'Float markets';
-    const env2 = config.priceEnv('MAIN_OLD_POOL');
-    const env3 = config.priceEnv('MAIN_V2_PROD_V1');
-    await callAPIPriceCompare2VersionDen(fileName, sheetName, env2, env3);
-});
-
-test('Compare Price V2-Prod vs Prod -V2', async () => {
-    test.setTimeout(9000000);
-    const fileName = 'test-results/market_2312_MAIN_OLD_POOL.xlsx';
-    const sheetName = 'Leverage markets';
-    const env2 = config.priceEnv('MAIN_NEW_POOL_V2');
-    const env3 = config.priceEnv('MAIN_V2_PROD_V2');
-    await callAPIPriceCompare2VersionDen(fileName, sheetName, env2, env3);
-});
-
-test('Compare Price V2-Prod vs Prod -V3', async () => {
-    test.setTimeout(9000000);
-    const fileName = 'test-results/market_2312_MAIN_OLD_POOL.xlsx';
-    const sheetName = 'Leverage markets';
-    const env2 = config.priceEnv('MAIN_NEW_POOL_V3');
-    const env3 = config.priceEnv('MAIN_V2_PROD_V2');
-    await callAPIPriceCompare2VersionDen(fileName, sheetName, env2, env3);
-});
 
 // Có dùng
 async function callAPIPriceDenominator(fileName: string, sheetName: string, env: any) {
@@ -145,17 +57,17 @@ async function callAPIPriceDenominator(fileName: string, sheetName: string, env:
     common.saveToExcelFile(`test-results/check_price_${timestamp}.xlsx`, 'Price 3 Version', allPrice);
 }
 
-async function callAPIPriceCompare2VersionNoDen(fileName: string, sheetName: string, env1: any, env2: any) {
-    const listTokenPairs = common.readFromExcelFile(fileName, sheetName);
+async function callAPIPriceCompare2Version(inputFileName: string, inputSheetName: string, env1: any, env2: any, outputFileName: string) {
+    const listTokenPairs = common.readFromExcelFile(inputFileName, inputSheetName);
     let index = 0;
     const allPrice: any[] = [];
     for (const item of listTokenPairs) {
 
-        const responseV1 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', '', env1.oracleScriptHash, env1.urlPrice);
-        const responseV2 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', '', env2.oracleScriptHash, env2.urlPrice);
+        const responseV1 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', item.denominator ?? '', env1.oracleScriptHash, env1.urlPrice);
+        const responseV2 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', item.denominator ?? '', env2.oracleScriptHash, env2.urlPrice);
         // const responseV3NoDen = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '',  '', v3SKH, env.urlPrice);
 
-        console.log(`Cặp giá ${++index}: ${item.collateralToken} - ${item.Token}`);
+        console.log(`Cặp giá ${++index}: ${item.collateralToken} - ${item.Token} - denomination ${item.denominator}`);
         let resultV1 = await readResponse(responseV1);
         let resultV2 = await readResponse(responseV2);
         // let resultV3NoDen = await readResponse(responseV3NoDen);
@@ -165,6 +77,7 @@ async function callAPIPriceCompare2VersionNoDen(fileName: string, sheetName: str
             quoteToken: item.Token ?? '',
             quoteTokenName: common.searchTokenName(listTokenPairs, item.Token),
             denominator: item.denominator,
+
             collateralIsEnable: item.collateralIsEnable,
             exchangeRateNumV1: resultV1?.exchangeRateNum,
             exchangeRateDemV1: resultV1?.exchangeRateDen,
@@ -180,11 +93,11 @@ async function callAPIPriceCompare2VersionNoDen(fileName: string, sheetName: str
     let timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
     // common.saveToExcelFile(`test-results/check_price_${timestamp}.xlsx`,'Error Price', rows);
     // common.saveToExcelFile2sheet(`test-results/check_price_${timestamp}.xlsx`, 'Error Price', 'valide Price', rows, allPrice);
-    common.saveToExcelFile(`test-results/check_price_Main_POV_V1_${timestamp}.xlsx`, 'Price 2 Version', allPrice);
+    common.saveToExcelFile(`test-results/${outputFileName}_${timestamp}.xlsx`, 'Price 2 Version', allPrice);
 }
 
 
-async function callAPIPriceCompare2VersionDen(fileName: string, sheetName: string, env1: any, env2: any) {
+async function callAPIPriceCompare2VersionDen(fileName: string, sheetName: string, env1: any, env2: any, outputFileName: string) {
     const listTokenPairs = common.readFromExcelFile(fileName, sheetName);
     let index = 0;
     const allPrice: any[] = [];
@@ -193,7 +106,7 @@ async function callAPIPriceCompare2VersionDen(fileName: string, sheetName: strin
         // const responseV1 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', item.denominator.toString() ?? '', env1.oracleScriptHash, env1.urlPrice);
         // const responseV2 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', item.denominator.toString() ?? '', env2.oracleScriptHash, env2.urlPrice);
 
-         const responseV1 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', '', env1.oracleScriptHash, env1.urlPrice);
+        const responseV1 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', '', env1.oracleScriptHash, env1.urlPrice);
         const responseV2 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', '', env2.oracleScriptHash, env2.urlPrice);
 
         console.log(`Cặp giá ${++index}: ${item.collateralToken} - ${item.Token} - denomination ${item.denominator}`);
@@ -221,7 +134,7 @@ async function callAPIPriceCompare2VersionDen(fileName: string, sheetName: strin
     let timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
     // common.saveToExcelFile(`test-results/check_price_${timestamp}.xlsx`,'Error Price', rows);
     // common.saveToExcelFile2sheet(`test-results/check_price_${timestamp}.xlsx`, 'Error Price', 'valide Price', rows, allPrice);
-    common.saveToExcelFile(`test-results/check_price_Main_POV_V2_${timestamp}.xlsx`, 'Price 2 Version', allPrice);
+    common.saveToExcelFile(`test-results/${outputFileName}_${timestamp}.xlsx`, 'Price 2 Version', allPrice);
 }
 async function callAPIPriceCompare3VersionNoDen(fileName: string, sheetName: string, env1: any, env2: any, env3: any) {
     const listTokenPairs = common.readFromExcelFile(fileName, sheetName);
@@ -464,7 +377,7 @@ async function callAPIPrice(baseToken: string, quoteToken: string, denominatior:
             tokenPairs: [{
                 baseToken: baseToken ?? '',
                 quoteToken: quoteToken ?? '',
-                denominator: denominatior ?? '',
+                denominator: denominatior.toString() ?? '',
                 oracleScriptHash: skh ?? ''
             }
             ]
