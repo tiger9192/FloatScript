@@ -5,10 +5,10 @@ export function priceEnv(env: string) {
             oracleScriptHash: '',
             urlPrice: '',
         }
-    else if (env === 'PREPROD')
+    else if (env === 'PREPROD_FLOAT')
         return {
-            oracleScriptHash: '',
-            urlPrice: '',
+            oracleScriptHash: '9613270846c950e6c3162fdc309f5d31de9c125f51fc454552bb1396',
+            urlPrice: 'https://onchain-price-preprod.dev.tekoapis.net/api/v1/prices',
         }
     // V1
     else if (env === 'MAIN_OLD_POOL') {
@@ -89,6 +89,7 @@ export function env(env: string) {
             resultName: 'PREVIEW',
             lendingUrl: '',
             usdm: '',
+            poolUrl: '',
         }
     else if (env === 'PREPROD')
         return {
@@ -102,6 +103,7 @@ export function env(env: string) {
             resultName: 'PREPROD',
             lendingUrl: 'https://danogo.dev.teko.vn/',
             usdm: '834a15101873b4e1ddfaa830df46792913995d8738dcde34eda27905.665553444d',
+            poolUrl: 'https://loan-monitor-preprod.dev.tekoapis.net/api/v1/load-market-info',
         }
     else if (env === 'PREPROD_FLOAT')
         return {
@@ -110,8 +112,22 @@ export function env(env: string) {
             urlMarket: 'https://crypto-admin-float-preprod-bff.dev.tekoapis.net/api/v1/float-lending/markets',
             yieldUrl: '',
             resultName: 'PREPROD_FLOAT',
-            lendingUrl: 'https://float-supply-leverage.dev.teko.vn/',
+            lendingUrl: 'https://float-lending-bff-preprod.dev.tekoapis.net/api/v1/',
             usdm: '834a15101873b4e1ddfaa830df46792913995d8738dcde34eda27905.665553444d',
+            poolUrl: 'https://loan-monitor-preprod.dev.tekoapis.net/api/v1/load-market-info',
+
+        }
+         else if (env === 'PREPROD_LEVERAGE')
+        return {
+            oracleScriptHash: '', 
+            urlPrice: 'https://onchain-price-preprod.dev.tekoapis.net/api/v1/prices',
+            urlMarket: 'https://crypto-admin-preprod-bff.dev.tekoapis.net/api/v1/float-lending/markets',
+            yieldUrl: '',
+            resultName: 'PREPROD_LEVERAGE',
+            lendingUrl: '',
+            usdm: '',
+            poolUrl: 'https://loan-monitor-preprod.dev.tekoapis.net/api/v1/load-market-info',
+
         }
     else if (env === 'MAIN_OLD_POOL') {
         return {
@@ -121,6 +137,7 @@ export function env(env: string) {
             yieldUrl: 'https://yield-aggregator.tekoapis.com/',
             resultName: 'MAIN_OLD_POOL',
             lendingUrl: 'https://float-lending-bff.api.danogo.io/api/v1/load-main-screen',
+            poolUrl: '',
             usdm: '',
         }
     }
@@ -133,6 +150,7 @@ export function env(env: string) {
             resultName: 'MAIN_POC_POOL',
             lendingUrl: 'https://float-lending-bff.tekoapis.com/api/v1/load-main-screen',
             usdm: '',
+            poolUrl: '',
         }
     }
     else if (env === 'MAIN_NEW_POOL') {
@@ -147,6 +165,7 @@ export function env(env: string) {
             resultName: 'MAIN_NEW_POOL',
             lendingUrl: '',
             usdm: '',
+            poolUrl: '',
         }
     }
     if (env === 'MAIN_POV') {
@@ -158,6 +177,7 @@ export function env(env: string) {
             resultName: 'MAIN_POV',
             lendingUrl: 'https://poc-float-lending-bff.tekoapis.com/api/v1/load-main-screen',
             usdm: '',
+            poolUrl: '',
         }
     }
     else {
@@ -169,6 +189,7 @@ export function env(env: string) {
             resultName: '',
             lendingUrl: '',
             usdm: '',
+            poolUrl: '',
         }
     }
 }

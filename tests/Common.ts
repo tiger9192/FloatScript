@@ -151,12 +151,32 @@ export function saveToExcelFile(filePath: string, sheetName: string, rows: any[]
     console.log(`✅ Đã ghi dữ liệu ra file ${filePath}.xlsx`);
 }
 
+export type SheetInput = {
+  sheetName: string;
+  data: any[];
+};
+
+export function saveToExcelFileMultipleSheets(filePath: string, sheets: SheetInput[]) {
+    // Chuyển sang sheet
+    const workbook = XLSX.utils.book_new();
+
+    for (const sheet of sheets) {
+        let data = XLSX.utils.json_to_sheet(sheet.data);
+        XLSX.utils.book_append_sheet(workbook, data, sheet.sheetName);
+    }
+
+    // Xuất file Excel
+    XLSX.writeFile(workbook, filePath);
+
+    console.log(`✅ Đã ghi dữ liệu ra file ${filePath}.xlsx`);
+}
+
+
 export function saveToExcelFile2sheet(filePath: string, sheetNameError: string, sheetNameSuccess: string, rowsError: any[], rowsSuccess: any[]) {
     // Chuyển sang sheet
     const workbook = XLSX.utils.book_new();
 
     const errorSheet = XLSX.utils.json_to_sheet(rowsError);
-
     const successSheet = XLSX.utils.json_to_sheet(rowsSuccess);
     XLSX.utils.book_append_sheet(workbook, successSheet, sheetNameSuccess);
     XLSX.utils.book_append_sheet(workbook, errorSheet, sheetNameError);

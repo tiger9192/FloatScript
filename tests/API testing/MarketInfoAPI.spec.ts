@@ -38,6 +38,38 @@ test('Verify MarketInfo APY', async () => {
     console.log("✅ Đã ghi dữ liệu ra file markets excel");
 });
 
+test('Get pool config', async () => {
+    const apiContext = await request.newContext();
+    // const env = config.env('PREVIEW');
+    // const env = config.env('PREPROD');
+    const env = config.env('PREPROD_FLOAT');
+    // const env = config.env('MAIN_OLD_POOL');
+    // const env = config.env('MAIN_NEW_POOL');
+    const response = await apiContext.get(env.urlMarket, {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+    expect(response.status()).toBe(200);
+    const responseMarketInfo = await response.json();
+    const rows: any[] = [];
+
+    responseMarketInfo.data.markets.forEach((market: any) => {
+
+        rows.push({
+            Pool_id: market.poolId,
+            Token: market.token,
+            TokenName: market.tokenName,
+            loanFeeRate:market.loanFeeRate,
+            utilizationCap: market.utilizationCap,
+        });
+    });
+    const listToken = await readTokenList(rows);
+    let timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    common.saveToExcelFile(`test-results/market_${env.resultName}_${timestamp}.xlsx`, 'Market info', rows);
+    console.log("✅ Đã ghi dữ liệu ra file markets excel");
+});
+
 async function readTokenList(marketList: any[]): Promise<any[]> {
     let allToken: any[] = [];
     marketList.forEach((market: any) => {
