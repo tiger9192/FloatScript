@@ -60,7 +60,13 @@ export function priceEnv(env: string) {
     }
     else if (env === 'BETA_V3.0') {
         return {
-            oracleScriptHash: '7115b6ccb9ba59e079b6b043b4344ecc6fe061ef7f748feebe50c120',
+            oracleScriptHash: '012a6bd4ae76261c1d3b5067caa4010f781f5c1c64ce2779bba2f90a',
+            urlPrice: 'https://onchain-price-aggregator-beta.tekoapis.com/api/v1/prices',
+        }
+    }
+     else if (env === 'MAIN_V3.0') {
+        return {
+            oracleScriptHash: '012a6bd4ae76261c1d3b5067caa4010f781f5c1c64ce2779bba2f90a',
             urlPrice: 'https://onchain-price-aggregator.api.danogo.io/api/v1/prices',
         }
     }
@@ -72,7 +78,13 @@ export function priceEnv(env: string) {
     }
     else if (env === 'BETA_V3.3') {
         return {
-            oracleScriptHash: '2eb7e9be6a1fff3e3e33d2b05007488f199c895a051b3ee371a95f6c',
+            oracleScriptHash: '3f6317dc87ffc2bb59511ecbf1362dea4ef278bd48e9518fc5ea2c6d',
+            urlPrice: 'https://onchain-price-aggregator-beta.tekoapis.com/api/v1/prices',
+        }
+    }
+     else if (env === 'MAIN_V3.3') {
+        return {
+            oracleScriptHash: '3f6317dc87ffc2bb59511ecbf1362dea4ef278bd48e9518fc5ea2c6d',
             urlPrice: 'https://onchain-price-aggregator.api.danogo.io/api/v1/prices',
         }
     }

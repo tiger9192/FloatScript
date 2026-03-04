@@ -11,17 +11,27 @@ test('Compare Price Main V1 Vs Beta V3.0 ', async () => {
     const inputFileName = './tests/datatest/ListPriceFloat.xlsx';
     const inputSheetName = 'Market info';
     const env1 = config.priceEnv('MAIN_V1');
-    const env3 = config.priceEnv('BETA_V3.0');
-    await callAPIPriceCompare2Version(inputFileName, inputSheetName, env1, env3, 'MainV1_vs_BetaV3.0');
+    const env3 = config.priceEnv('MAIN_V3.0');
+    await callAPIPriceCompare2Version(inputFileName, inputSheetName, env1, env3, 'MainV1_vs_MainV3.0');
 });
+
+test('Compare Price Beta V3.0  vs Cloud v3.0', async () => {
+    test.setTimeout(9000000);
+    const inputFileName = './tests/datatest/ListPriceFloat.xlsx';
+    const inputSheetName = 'Market info';
+    const env1 = config.priceEnv('BETA_V3.0');
+    const env3 = config.priceEnv('MAIN_V3.0');
+    await callAPIPriceCompare2Version(inputFileName, inputSheetName, env1, env3, 'BetaV3.0_vs_MainV3.0');
+});
+
 
 test('Compare Price Main V3.1 Vs Beta V3.3', async () => {
     test.setTimeout(9000000);
     const inputFileName = './tests/datatest/ListPriceLeverage.xlsx';
     const inputSheetName = 'Market info';
     const env2 = config.priceEnv('MAIN_V3.1');
-    const env3 = config.priceEnv('BETA_V3.3');
-    await callAPIPriceCompare2Version(inputFileName, inputSheetName, env2, env3, 'MainV3.1_vs_BetaV3.3');
+    const env3 = config.priceEnv('MAIN_V3.3');
+    await callAPIPriceCompare2Version(inputFileName, inputSheetName, env2, env3, 'MainV3.1_vs_MainV3.3');
 });
 
 
@@ -67,7 +77,7 @@ async function callAPIPriceCompare2Version(inputFileName: string, inputSheetName
         const responseV2 = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '', item.denominator ?? '', env2.oracleScriptHash, env2.urlPrice);
         // const responseV3NoDen = await callAPIPrice(item.collateralToken ?? '', item.Token ?? '',  '', v3SKH, env.urlPrice);
 
-        console.log(`Cặp giá ${++index}: ${item.collateralToken} - ${item.Token} - denomination ${item.denominator}`);
+        console.log(`Cặp giá ${++index}: ${item.collateralToken} - ${item.Token} - denomination ${item.denominator ?? ''}`);
         let resultV1 = await readResponse(responseV1);
         let resultV2 = await readResponse(responseV2);
         // let resultV3NoDen = await readResponse(responseV3NoDen);
@@ -339,21 +349,21 @@ async function readResponse(response: any) {
         // console.log(JSON.stringify(responseBody));
         if (responseBody.data.priceInfos.length === 0) {
             console.log(`Cặp token ko có giá `)
-            result.note = 'Cặp token ko có giá';
+            result.note = 'Cặp token ko có giá priceInfos = empty';
         }
         else {
             const isActive: boolean = Boolean(responseBody.data.priceInfos[0].isActive);
+            result.note = '';
+            if (responseBody.data.priceInfos[0].referenceInputs.length === 0) {
+                result.note = 'Giá off chain';
+                console.log(`Giá off chain `)
+            }
             if (isActive === false) {
                 result.note = 'Giá bị inactive';
                 console.log(`Giá bị inactive `)
-                result.exchangeRateNum = parseFloat(responseBody.data.priceInfos[0].exchangeRateNum ?? '0');
-                result.exchangeRateDen = parseFloat(responseBody.data.priceInfos[0].exchangeRateDen ?? '0');
             }
-            else {
-                result.note = '';
-                result.exchangeRateNum = parseFloat(responseBody.data.priceInfos[0].exchangeRateNum ?? '0');
-                result.exchangeRateDen = parseFloat(responseBody.data.priceInfos[0].exchangeRateDen ?? '0');
-            }
+            result.exchangeRateNum = parseFloat(responseBody.data.priceInfos[0].exchangeRateNum ?? '0');
+            result.exchangeRateDen = parseFloat(responseBody.data.priceInfos[0].exchangeRateDen ?? '0');
         }
         return result;
     }

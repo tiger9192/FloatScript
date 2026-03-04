@@ -152,8 +152,8 @@ export function saveToExcelFile(filePath: string, sheetName: string, rows: any[]
 }
 
 export type SheetInput = {
-  sheetName: string;
-  data: any[];
+    sheetName: string;
+    data: any[];
 };
 
 export function saveToExcelFileMultipleSheets(filePath: string, sheets: SheetInput[]) {
@@ -244,9 +244,13 @@ export function searchTokenName(data: any, token: string): string {
                 tokenName = row.collateralTokenName;
                 // console.log(`   Search token collateralToken ${row.collateralToken} collateralTokenName ${row.collateralTokenName}`);
                 break;
+            }
+            else if (token === row.Token) {
+                tokenName = row.TokenName;
+                break;
             };
-        };
-    };
+        }
+    }
     return tokenName;
 }
 

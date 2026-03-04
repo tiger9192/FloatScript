@@ -86,11 +86,14 @@ test('Get all data merge float và leverage full', async () => {
     test.setTimeout(9000000);
     let listSheets: common.SheetInput[] = [];
     let env = config.env('PREPROD_FLOAT');
+    
     console.log(` Bước 1 đọc db pool float trong file excel`);
     let listTokenFloat = await readDBdata('./tests/datatest/DB_Float_Pools.xlsx', 'FloatListPools', env);
     listTokenFloat.sort((a: any, b: any) => (a.pool_token > b.pool_token) ? 1 : -1);
+    
     console.log(` Bước 2 đọc db pool leverage trong file excel`);
     let listTokenLeverage = await readDBdata('./tests/datatest/DB_Float_Pools.xlsx', 'LeverageListPools', env);
+    
     console.log(` Bước 3: Gọi API Market Parame của float`)
     let marketParamsFloat = await callAPIMarketParams(config.env('PREPROD_FLOAT'));
     marketParamsFloat.sort((a: any, b: any) => (a.Pool_id > b.Pool_id) ? 1 : -1);
@@ -123,7 +126,9 @@ test('Get all data merge float và leverage full', async () => {
             if (listTokenFloat[i].alter_name !== undefined) {
                 const partA = listTokenFloat[i].alter_name.split('.')[1];
                 const partB = itemLeverageParam.Pool_id.split('.')[1];
+                console.log(`So sánh partA: ${partA} với partB: ${partB}`);
                 if (partA === partB) {
+                    console.log(`Tìm thấy match LoanFeeRate và utilizationCap cho pool ${itemLeverageParam.loanFeeRate}`);
                     listTokenFloat[i].FLoanFeeRate = itemLeverageParam.loanFeeRate;
                     listTokenFloat[i].FutilizationCap = itemLeverageParam.utilizationCap;
                 }
@@ -141,34 +146,34 @@ test('Get all data merge float và leverage full', async () => {
     results.sort((a: any, b: any) => (a.poolId > b.poolId) ? 1 : -1);
     listSheets.push({ sheetName: 'MarketInfo', data: results });
 
-    console.log(` Bước 6: Gọi API lending pool`);
-    let response = await callAPILendingPool(env);
-    let data = await response.json();
-    let lendingResults: any[] = [];
-    for (const item of data.data.pools) {
-        lendingResults.push({
-            poolId: item.poolId,
-            token: item.token,
-            liquidity: item.liquidity,
-            liquidityInUsd: item.liquidityInUsd,
-            totalBorrow: item.totalBorrow,
-            utilization: item.utilization,
-            supplyApy: item.supplyApy,
-            borrowApr: item.borrowApr,
-        }
-        );
-    }
-    lendingResults.sort((a: any, b: any) => (a.poolId > b.poolId) ? 1 : -1);
-    listSheets.push({ sheetName: 'LendingPool', data: lendingResults });
+    // console.log(` Bước 6: Gọi API lending pool`);
+    // let response = await callAPILendingPool(env);
+    // let data = await response.json();
+    // let lendingResults: any[] = [];
+    // for (const item of data.data.pools) {
+    //     lendingResults.push({
+    //         poolId: item.poolId,
+    //         token: item.token,
+    //         liquidity: item.liquidity,
+    //         liquidityInUsd: item.liquidityInUsd,
+    //         totalBorrow: item.totalBorrow,
+    //         utilization: item.utilization,
+    //         supplyApy: item.supplyApy,
+    //         borrowApr: item.borrowApr,
+    //     }
+    //     );
+    // }
+    // lendingResults.sort((a: any, b: any) => (a.poolId > b.poolId) ? 1 : -1);
+    // listSheets.push({ sheetName: 'LendingPool', data: lendingResults });
 
-    console.log(` Bước 7: Gọi API Supply Screen`);
-    let supplyResults = await callAPILoadSupplyScreen(listTokenFloat, env, 'SupplyScreen');
-    supplyResults.sort((a: any, b: any) => (a.pool_token > b.pool_token) ? 1 : -1);
-    listSheets.push({ sheetName: 'SupplyScreen', data: supplyResults });
-    console.log(` Bước 8: Gọi API Borrow Screen`);
-    let borrowResults = await callAPILoadBorrowScreen(listTokenFloat, env, 'BorrowScreen');
-    borrowResults.sort((a: any, b: any) => (a.poolId > b.poolId) ? 1 : -1);
-    listSheets.push({ sheetName: 'BorrowScreen', data: borrowResults });
+    // console.log(` Bước 7: Gọi API Supply Screen`);
+    // let supplyResults = await callAPILoadSupplyScreen(listTokenFloat, env, 'SupplyScreen');
+    // supplyResults.sort((a: any, b: any) => (a.pool_token > b.pool_token) ? 1 : -1);
+    // listSheets.push({ sheetName: 'SupplyScreen', data: supplyResults });
+    // console.log(` Bước 8: Gọi API Borrow Screen`);
+    // let borrowResults = await callAPILoadBorrowScreen(listTokenFloat, env, 'BorrowScreen');
+    // borrowResults.sort((a: any, b: any) => (a.poolId > b.poolId) ? 1 : -1);
+    // listSheets.push({ sheetName: 'BorrowScreen', data: borrowResults });
 
 
 
@@ -261,6 +266,7 @@ test('Lấy all data ghep float và Leverage', async () => {
 
 async function callAPIMarketParams(env: any): Promise<any> {
     const apiContext = await request.newContext();
+    console.log(`Calling API Market Info ${env.urlMarket}`);
     const response = await apiContext.get(env.urlMarket, {
         headers: {
             'Content-Type': 'application/json'
