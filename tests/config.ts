@@ -88,6 +88,12 @@ export function priceEnv(env: string) {
             urlPrice: 'https://onchain-price-aggregator.api.danogo.io/api/v1/prices',
         }
     }
+    else{
+        return {
+            oracleScriptHash: '',
+            urlPrice: '',
+        }
+    }
 }
 
 export function env(env: string) {

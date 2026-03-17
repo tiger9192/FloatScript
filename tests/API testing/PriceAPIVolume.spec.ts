@@ -25,16 +25,25 @@ test('Compare Price Beta V3.0  vs Cloud v3.0', async () => {
 });
 
 
-test('Compare Price Main V3.1 Vs Beta V3.3', async () => {
+test('Compare Price Main V3.0 Vs Beta V3.3', async () => {
     test.setTimeout(9000000);
     const inputFileName = './tests/datatest/ListPriceLeverage.xlsx';
     const inputSheetName = 'Market info';
-    const env2 = config.priceEnv('MAIN_V3.1');
-    const env3 = config.priceEnv('MAIN_V3.3');
-    await callAPIPriceCompare2Version(inputFileName, inputSheetName, env2, env3, 'MainV3.1_vs_MainV3.3');
+    const env2 = config.priceEnv('MAIN_V3.0');
+    const env3 = config.priceEnv('BETA_V3.3');
+    await callAPIPriceCompare2Version(inputFileName, inputSheetName, env2, env3, 'MainV3.0_vs_BetaV3.3');
 });
 
-
+test('Compare Price Cloud V3.0  vs Cloud v3.3', async () => {
+    test.setTimeout(9000000);
+    const inputFileName = './tests/datatest/ListPriceLeverage.xlsx';
+    const inputSheetName = 'Market info';
+    const env1 = config.priceEnv('MAIN_V3.0');
+    const env3 = config.priceEnv('MAIN_V3.3');
+    console.log(`url price v1: ${env1.urlPrice} - v2: ${env3.urlPrice}`);
+    console.log(`skh v1: ${env1.oracleScriptHash} - v2: ${env3.oracleScriptHash}`);
+    await callAPIPriceCompare2Version(inputFileName, inputSheetName, env1, env3, 'MainV3.0_vs_MainV3.3');
+});
 
 // Có dùng
 async function callAPIPriceDenominator(fileName: string, sheetName: string, env: any) {
@@ -91,10 +100,12 @@ async function callAPIPriceCompare2Version(inputFileName: string, inputSheetName
             collateralIsEnable: item.collateralIsEnable,
             exchangeRateNumV1: resultV1?.exchangeRateNum,
             exchangeRateDemV1: resultV1?.exchangeRateDen,
+            referenceInputsV1: resultV1?.referenceInputs,
             noteV1: resultV1?.note,
 
             exchangeRateNumV2: resultV2?.exchangeRateNum,
             exchangeRateDemV2: resultV2?.exchangeRateDen,
+            referenceInputsV2: resultV2?.referenceInputs,
             noteV2: resultV2?.note,
 
         });
@@ -337,6 +348,7 @@ async function readResponse(response: any) {
     let result = {
         exchangeRateNum: 0,
         exchangeRateDen: 0,
+        referenceInputs: '',
         note: '',
     };
     if (response.status() !== 200) {
@@ -357,6 +369,13 @@ async function readResponse(response: any) {
             if (responseBody.data.priceInfos[0].referenceInputs.length === 0) {
                 result.note = 'Giá off chain';
                 console.log(`Giá off chain `)
+            } else {
+                for (const input of responseBody.data.priceInfos[0].referenceInputs) {
+                    if (input.type != 'ORACLE_CONFIG' && input.type != 'ORACLE_SOURCE_PATH') {
+                        result.referenceInputs = result.referenceInputs + ', ' + input.type;
+                    }
+                }
+                
             }
             if (isActive === false) {
                 result.note = 'Giá bị inactive';
@@ -364,6 +383,7 @@ async function readResponse(response: any) {
             }
             result.exchangeRateNum = parseFloat(responseBody.data.priceInfos[0].exchangeRateNum ?? '0');
             result.exchangeRateDen = parseFloat(responseBody.data.priceInfos[0].exchangeRateDen ?? '0');
+
         }
         return result;
     }

@@ -33,7 +33,7 @@ test('Parse list pool', async () => {
     listPoolInverse = getPoolInverse(listpool);
     let timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
     // common.saveToExcelFile(`./test-results/listPools_parsed_${timestamp}.xlsx`, 'PoolsInfo', listpool);
-    common.saveToExcelFile2sheet(`./test-results/listPools_parsed_${timestamp}.xlsx`, 'PoolsInfo', 'PoolsInfo_Inverse',listpool, listPoolInverse);
+    common.saveToExcelFile2sheet(`./test-results/listPools_parsed_${timestamp}.xlsx`, 'PoolsInfo', 'PoolsInfo_Inverse', listpool, listPoolInverse);
 })
 
 type PoolInfo = {
@@ -50,11 +50,17 @@ type PoolInfo = {
     upperPrice: number;
     minX: number;
     minY: number;
+    feeX: number;
+    feeY: number;
+    assetX: number;
+    assetY: number;
+    sqrtLowerPrice: number;
+    sqrtUpperPrice: number;
 };
 
 function getPoolInverse(poolInfo: any[]): any[] {
     let listPoolInverse: any[] = [];
-    let poolInverse: PoolInfo; 
+    let poolInverse: PoolInfo;
     for (const key of poolInfo) {
         poolInverse = {
             tokenA: key.tokenB,
@@ -67,7 +73,13 @@ function getPoolInverse(poolInfo: any[]): any[] {
             lowerPrice: key.upperPrice ? 1 / key.upperPrice : 0,
             upperPrice: key.lowerPrice ? 1 / key.lowerPrice : 0,
             minX: key.minY,
-            minY: key.minX
+            minY: key.minX,
+            feeX: key.feeY,
+            feeY: key.feeX,
+            assetX: key.assetY,
+            assetY: key.assetX,
+            sqrtLowerPrice: key.sqrtUpperPrice ? 1 / key.sqrtUpperPrice : 0,
+            sqrtUpperPrice: key.sqrtLowerPrice ? 1 / key.sqrtLowerPrice : 0,
         };
         listPoolInverse.push(poolInverse)
     }
@@ -104,6 +116,18 @@ async function splashPool(jsonData: any): Promise<PoolInfo> {
             }
         }
     }
+    else {
+        for (const asset of jsonData.result.pool.multiAssets) {
+            let assetName = asset.policyId + '.' + asset.assets[0].name;
+            if (assetName === tokenB) {
+                tokenBAmount = Number(asset.assets[0].value);
+            }
+            if (assetName === tokenA) {
+                tokenAAmount = Number(asset.assets[0].value);
+            }
+        }
+
+    }
     let treasuryA = jsonData.result.pool.treasuryA;
     let treasuryB = jsonData.result.pool.treasuryB;
     let royaltyA = jsonData.result.pool.royaltyA;
@@ -123,10 +147,16 @@ async function splashPool(jsonData: any): Promise<PoolInfo> {
         lowerPrice: 0,
         upperPrice: 0,
         minX: 0,
-        minY: 0
+        minY: 0,
+        feeX: 0,
+        feeY: 0,
+        assetX: tokenAAmount,
+        assetY: tokenBAmount,
+        sqrtLowerPrice: 0,
+        sqrtUpperPrice: 0,
     };
 
-    console.log(`Splash Pool Info ${JSON.stringify(poolInfo)}`);
+    // console.log(`Splash Pool Info ${JSON.stringify(poolInfo)}`);
     return poolInfo;
 }
 
@@ -161,6 +191,18 @@ async function concentratedPool(jsonData: any): Promise<PoolInfo> {
             }
         }
     }
+    else {
+        for (const asset of jsonData.result.pool.multiAssets) {
+            let assetName = asset.policyId + '.' + asset.assets[0].name;
+            if (assetName === tokenB) {
+                tokenBAmount = Number(asset.assets[0].value);
+            }
+            if (assetName === tokenA) {
+                tokenAAmount = Number(asset.assets[0].value);
+            }
+        }
+
+    }
     let platformFeeA = jsonData.result.pool.platformFeeA;
     let platformFeeB = jsonData.result.pool.platformFeeB;
     let minTxAmountA = jsonData.result.pool.minTxAmountA;
@@ -182,6 +224,12 @@ async function concentratedPool(jsonData: any): Promise<PoolInfo> {
         upperPrice: (sqrtPriceUpperNum / sqrtPriceUpperDen) ** 2,
         minX: minTxAmountA,
         minY: minTxAmountB,
+        feeX: platformFeeA,
+        feeY: platformFeeB,
+        assetX: tokenAAmount,
+        assetY: tokenBAmount,
+        sqrtLowerPrice: (sqrtPriceLowerNum / sqrtPriceLowerDen),
+        sqrtUpperPrice: (sqrtPriceUpperNum / sqrtPriceUpperDen),
     }
 
     return poolInfo;
