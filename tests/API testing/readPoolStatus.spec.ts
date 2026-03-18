@@ -173,7 +173,7 @@ async function concentratedPool(jsonData: any): Promise<PoolInfo> {
     let tokenAAmount = 0;
     let tokenBAmount = 0;
     if (tokenA === '') {
-        tokenAAmount = jsonData.result.pool.coin - 3000000;
+        tokenAAmount = jsonData.result.pool.coin - 3000000 - jsonData.result.pool.totalSwapFee;
         for (const asset of jsonData.result.pool.multiAssets) {
             let assetName = asset.policyId + '.' + asset.assets[0].name;
             if (assetName === tokenB) {
@@ -182,7 +182,7 @@ async function concentratedPool(jsonData: any): Promise<PoolInfo> {
         }
     }
     else if (tokenB === '') {
-        tokenBAmount = jsonData.result.pool.coin - 3000000;
+        tokenBAmount = jsonData.result.pool.coin - 3000000- jsonData.result.pool.totalSwapFee;
         for (const asset of jsonData.result.pool.multiAssets) {
             let assetName = asset.policyId + '.' + asset.assets[0].name;
             // console.log('Asset name '+assetName);
