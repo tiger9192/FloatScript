@@ -64,7 +64,7 @@ export function priceEnv(env: string) {
             urlPrice: 'https://onchain-price-aggregator-beta.tekoapis.com/api/v1/prices',
         }
     }
-     else if (env === 'MAIN_V3.0') {
+    else if (env === 'MAIN_V3.0') {
         return {
             oracleScriptHash: '012a6bd4ae76261c1d3b5067caa4010f781f5c1c64ce2779bba2f90a',
             urlPrice: 'https://onchain-price-aggregator.api.danogo.io/api/v1/prices',
@@ -82,13 +82,13 @@ export function priceEnv(env: string) {
             urlPrice: 'https://onchain-price-aggregator-beta.tekoapis.com/api/v1/prices',
         }
     }
-     else if (env === 'MAIN_V3.3') {
+    else if (env === 'MAIN_V3.3') {
         return {
             oracleScriptHash: '3f6317dc87ffc2bb59511ecbf1362dea4ef278bd48e9518fc5ea2c6d',
             urlPrice: 'https://onchain-price-aggregator.api.danogo.io/api/v1/prices',
         }
     }
-    else{
+    else {
         return {
             oracleScriptHash: '',
             urlPrice: '',
@@ -103,6 +103,7 @@ export function env(env: string) {
             //  oracleScriptHash: '6ffa215ebd214d2d804dbb425f0c708262a3bc635f3ce2391b845748',
             urlPrice: 'https://onchain-price-aggregator.dev.tekoapis.net/api/v1/prices',
             urlMarket: 'https://crypto-admin-bff.dev.tekoapis.net/api/v1/float-lending/markets',
+            urlBff: '',
             yieldUrl: '',
             resultName: 'PREVIEW',
             lendingUrl: '',
@@ -117,6 +118,7 @@ export function env(env: string) {
             oracleScriptHash: '9613270846c950e6c3162fdc309f5d31de9c125f51fc454552bb1396', // V3
             urlPrice: 'https://onchain-price-preprod.dev.tekoapis.net/api/v1/prices',
             urlMarket: 'https://crypto-admin-preprod-bff.dev.tekoapis.net/api/v1/float-lending/markets',
+            urlBff: '',
             yieldUrl: '',
             resultName: 'PREPROD',
             lendingUrl: 'https://danogo.dev.teko.vn/',
@@ -127,7 +129,8 @@ export function env(env: string) {
         return {
             oracleScriptHash: '9613270846c950e6c3162fdc309f5d31de9c125f51fc454552bb1396', // V3
             urlPrice: 'https://onchain-price-preprod.dev.tekoapis.net/api/v1/prices',
-            urlMarket: 'https://crypto-admin-float-preprod-bff.dev.tekoapis.net/api/v1/float-lending/markets',
+            urlMarket: 'https://crypto-admin-float-preprod-bff.dev.tekoapis.net',
+            urlBff: 'https://float-lending-bff-preprod.dev.tekoapis.net',
             yieldUrl: '',
             resultName: 'PREPROD_FLOAT',
             lendingUrl: 'https://float-lending-bff-preprod.dev.tekoapis.net/api/v1/',
@@ -135,11 +138,13 @@ export function env(env: string) {
             poolUrl: 'https://loan-monitor-preprod.dev.tekoapis.net/api/v1/load-market-info',
 
         }
-         else if (env === 'PREPROD_LEVERAGE')
+    else if (env === 'PREPROD_LEVERAGE')
         return {
-            oracleScriptHash: '', 
+            oracleScriptHash: '',
             urlPrice: 'https://onchain-price-preprod.dev.tekoapis.net/api/v1/prices',
-            urlMarket: 'https://crypto-admin-preprod-bff.dev.tekoapis.net/api/v1/float-lending/markets',
+            urlMarket: 'https://crypto-admin-preprod-bff.dev.tekoapis.net',
+            urlBff: 'https://fleverage-bff-preprod.dev.tekoapis.net',
+
             yieldUrl: '',
             resultName: 'PREPROD_LEVERAGE',
             lendingUrl: '',
@@ -147,25 +152,27 @@ export function env(env: string) {
             poolUrl: 'https://loan-monitor-preprod.dev.tekoapis.net/api/v1/load-market-info',
 
         }
-    else if (env === 'MAIN_OLD_POOL') {
+    else if (env === 'MAIN_FLOAT') {
         return {
-            oracleScriptHash: '2eb7e9be6a1fff3e3e33d2b05007488f199c895a051b3ee371a95f6c',
+            oracleScriptHash: '',
             urlPrice: 'https://onchain-price-aggregator.tekoapis.com/api/v1/prices',
-            urlMarket: 'https://crypto-admin-bff.tekoapis.com/api/v1/float-lending/markets',
+            urlMarket: 'https://crypto-admin-bff.tekoapis.com',
+            urlBff: 'https://float-lending-bff.api.danogo.io',
             yieldUrl: 'https://yield-aggregator.tekoapis.com/',
-            resultName: 'MAIN_OLD_POOL',
+            resultName: 'MAIN_FLOAT',
             lendingUrl: 'https://float-lending-bff.api.danogo.io/api/v1/load-main-screen',
             poolUrl: '',
             usdm: '',
         }
     }
-    else if (env === 'MAIN_POC_POOL') {
+    else if (env === 'MAIN_LEVERAGE') {
         return {
-            oracleScriptHash: '7115b6ccb9ba59e079b6b043b4344ecc6fe061ef7f748feebe50c120', // poc
+            oracleScriptHash: '', // poc
             urlPrice: 'https://onchain-price-aggregator.api.danogo.io/api/v1/prices',
-            urlMarket: 'https://crypto-admin-bff.tekoapis.com/api/v1/float-lending/markets',
+            urlMarket: 'https://crypto-admin-beta.tekoapis.com',
+            urlBff: 'https://float-lending-bff-beta.tekoapis.com',
             yieldUrl: 'https://yield-aggregator.tekoapis.com/',
-            resultName: 'MAIN_POC_POOL',
+            resultName: 'MAIN_LEVERAGE',
             lendingUrl: 'https://float-lending-bff.tekoapis.com/api/v1/load-main-screen',
             usdm: '',
             poolUrl: '',
@@ -178,6 +185,7 @@ export function env(env: string) {
             oracleScriptHash: '7115b6ccb9ba59e079b6b043b4344ecc6fe061ef7f748feebe50c120', // V3
             // urlPrice: 'https://onchain-price-aggregator.tekoapis.com/api/v1/prices',
             urlPrice: 'https://onchain-price-aggregator-beta.tekoapis.com/api/v1/prices',
+            urlBff: '',
             urlMarket: 'https://crypto-admin-beta.tekoapis.com/api/v1/float-lending/markets',
             yieldUrl: 'https://float-lending-bff.tekoapis.com/',
             resultName: 'MAIN_NEW_POOL',
@@ -191,6 +199,7 @@ export function env(env: string) {
             oracleScriptHash: '2eb7e9be6a1fff3e3e33d2b05007488f199c895a051b3ee371a95f6c', // V3
             urlPrice: 'https://poc-onchain-price-aggregator.tekoapis.com/api/v1/prices',
             urlMarket: '',
+            urlBff: '',
             yieldUrl: '',
             resultName: 'MAIN_POV',
             lendingUrl: 'https://poc-float-lending-bff.tekoapis.com/api/v1/load-main-screen',
@@ -203,6 +212,7 @@ export function env(env: string) {
             oracleScriptHash: '',
             urlPrice: '',
             urlMarket: '',
+            urlBff: '',
             yieldUrl: '',
             resultName: '',
             lendingUrl: '',

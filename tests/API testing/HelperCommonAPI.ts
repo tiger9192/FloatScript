@@ -6,6 +6,137 @@ import * as common from '../Common';
 import * as config from '../config';
 
 
+/** Call API Load suppy screen và lấy supply APY */
+export async function callAPILoadSupplyScreenGetSupplyAPY(poolId: string, env: any): Promise<number> {
+    console.log(`Calling API Load supply screen to get supply APY ${env.urlBff}/api/v1/load-supply-screen`);
+    const apiContext = await request.newContext();
+    let requestParam = JSON.stringify({
+        poolId: poolId
+    });
+    const response = await apiContext.post(`${env.urlBff}/api/v1/load-supply-screen`, {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: requestParam
+    });
+    expect(response.status()).toBe(200);
+    const responseListPool = await response.json();
+    console.log(`Supply APY của pool ${poolId} là ${responseListPool.data.supplyApy}`);
+    return responseListPool.data.supplyApy;
+}
+
+/** Hàm gọi API Load main screen và trả về dữ liệu đã được xử lý
+ * Dữ liệu trả về sẽ bao gồm các trường:
+ * poolId,  
+ * tokenName,
+ * token,
+ * totalBorrow,
+ * utilization,
+ * borrowApr,            
+ * supplyApy, 
+ * dTokenRate   
+ */
+export async function callAPILoadMainScreen(env: any): Promise<any> {
+    const apiContext = await request.newContext();
+    console.log(`Calling API Load main screen ${env.urlBff}/api/v1/load-main-screen`);
+    const response = await apiContext.post(`${env.urlBff}/api/v1/load-main-screen`, {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+    expect(response.status()).toBe(200);
+    const responseListPool = await response.json();
+    const rows: any[] = [];
+
+    responseListPool.data.pools.forEach((pool: any) => {
+        rows.push({
+            poolId: pool.poolId,
+            token: pool.token,
+            tokenName: pool.tokenName,
+            totalBorrow: pool.totalBorrow,
+            utilization: pool.utilization,
+            borrowApr: pool.borrowApr,
+            supplApy: pool.supplyApy,
+            dtokenRate: pool.dTokenRate,
+        });
+    });
+    return rows;
+}
+
+/** Hàm gọi API reserve pool lấy total supply
+ * Dữ liệu trả về sẽ bao gồm các trường:
+ * poolId,
+ * totalSupply,
+ */
+
+export async function callAPIResevePool(env: any): Promise<any> {
+    const apiContext = await request.newContext();
+    console.log(`Calling API ReservePool ${env.urlMarket}/api/v1/reserve-pool-screen?page=1&pageSize=100`);
+    const response = await apiContext.get(`${env.urlMarket}/api/v1/reserve-pool-screen?page=1&pageSize=100`, {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+    expect(response.status()).toBe(200);
+    const responseMarketInfo = await response.json();
+    const rows: any[] = [];
+
+    responseMarketInfo.data.pools.forEach((pool: any) => {
+
+        rows.push({
+            poolId: pool.poolId,
+            totalSupply: pool.totalSupply,
+        });
+    });
+    return rows;
+}
+
+/** Hàm gọi API Market Params và trả về dữ liệu đã được xử lý 
+ * Dữ liệu trả về sẽ bao gồm các trường:
+ * poolId,
+ * token,
+ * tokenName,
+ * loanFeeRate,
+ * alterToken,
+ * alterAmount,
+ */
+
+export async function callAPIMarketParams(env: any): Promise<any> {
+    const apiContext = await request.newContext();
+    console.log(`Calling API Market Info ${env.urlMarket}/api/v1/float-lending/markets`);
+    const response = await apiContext.get(`${env.urlMarket}/api/v1/float-lending/markets`, {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+    expect(response.status()).toBe(200);
+    const responseMarketInfo = await response.json();
+    const rows: any[] = [];
+
+    responseMarketInfo.data.markets.forEach((market: any) => {
+        let altTokens = market.alternativeSupplyTokens || [];
+        let supplyLeverage = false;
+        let alterAmount = 0;
+        let alterToken = '';
+        altTokens.forEach((altToken: any) => {
+            if (altToken.protocolName === 'Leverage' && altToken.isEnable === true) {
+                supplyLeverage = true;
+                alterAmount = altToken.tokenAmount;
+                alterToken = altToken.poolId;
+            }
+        });
+        rows.push({
+            poolId: market.poolId,
+            token: market.token,
+            tokenName: market.tokenName,
+            loanFeeRate: market.loanFeeRate,
+            alterToken: alterToken,
+            alterAmount: alterAmount,
+        });
+    });
+    return rows;
+}
+
 export async function callAPIPrice(baseToken: string, quoteToken: string, denominatior: string, skh: string, url: string): Promise<any> {
     const apiContext = await request.newContext();
     let requestParam = JSON.stringify({});

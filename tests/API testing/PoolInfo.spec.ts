@@ -6,6 +6,7 @@ import * as common from '../Common';
 import * as config from '../config';
 import { callAPIPrice } from './HelperCommonAPI';
 import { readResponse } from './HelperCommonAPI';
+import * as APICommon from './HelperCommonAPI';
 
 
 test('Get pool info ', async () => {
@@ -71,36 +72,122 @@ test('Read pool config ', async () => {
     common.saveToExcelFileMultipleSheets(`test-results/AllData_PREPROD_FLOAT_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.xlsx`, listSheets);
 });
 
-test('Read DB ', async () => {
+test('Check API reserve pool', async () => {
     test.setTimeout(9000000);
     let listSheets: common.SheetInput[] = [];
-    let env = config.env('PREPROD_FLOAT');
-    let listTokenFloat = await readDBdata('./tests/datatest/DB_Float_Pools.xlsx', 'FloatListPools', env);
-    listSheets.push({ sheetName: 'ListPools_Float', data: listTokenFloat });
+    let envLeverage = config.env('PREPROD_LEVERAGE');
+    let envFloat = config.env('PREPROD_FLOAT');
+    let listFloatMarketParams = await APICommon.callAPIMarketParams(envFloat);
+    let listFloatPool = await APICommon.callAPILoadMainScreen(envFloat);
+    let listFloatTotalSupply = await APICommon.callAPIResevePool(envFloat);
+    // Ghép dữ liệu Market Params và Load main screen của Leverage
+    let floatMergeTotalSupply = listFloatPool.map((market: any) => {
+        const pool = listFloatTotalSupply.find((p: any) => p.poolId === market.poolId);
+        return { ...market, ...pool };
+    });
+
+    // Ghép dữ liệu Market Params và Load main screen của Leverage
+    let floatPools = floatMergeTotalSupply.map((market: any) => {
+        const pool = listFloatMarketParams.find((p: any) => p.poolId === market.poolId);
+        let calSupplyFloatAPY = market.borrowApr * market.utilization / 100 * (1 - pool.loanFeeRate)
+        return { ...market, ...pool, calSupplyFloatAPY: calSupplyFloatAPY };
+    });
+    listSheets.push({ sheetName: 'ListFloatPool', data: listFloatPool });
+    listSheets.push({ sheetName: 'ListFloatMarketParams', data: listFloatMarketParams });
+    listSheets.push({ sheetName: 'FloatTotalSupply', data: listFloatTotalSupply });
+    listSheets.push({ sheetName: 'floatMergeTotalSupply', data: floatMergeTotalSupply });
+    listSheets.push({ sheetName: 'FloatData', data: floatPools });
+
+    common.saveToExcelFileMultipleSheets(`test-results/Float_Pool_info_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.xlsx`, listSheets);
+});
+
+test('Check supply APY theo luồng Float supply Leverage ', async () => {
+    test.setTimeout(9000000);
+    let listSheets: common.SheetInput[] = [];
+
+    let envFloat = config.env('MAIN_FLOAT');
+    let envLeverage = config.env('MAIN_LEVERAGE');
+
+    // Bước 1: Gọi API Market Parame, load main screen của Leverage để lấy thông tin pool leverage
+    let listLeverageMarketParams = await APICommon.callAPIMarketParams(envLeverage);
+    let listLeveragePool = await APICommon.callAPILoadMainScreen(envLeverage);
+    let leveragePools = listLeveragePool.map((market: any) => {
+        const pool = listLeverageMarketParams.find((p: any) => p.poolId === market.poolId);
+        return { ...market, ...pool };
+    });
+
+    // listSheets.push({ sheetName: 'ListLeverageMarketParams', data: listLeverageMarketParams });
+    // listSheets.push({ sheetName: 'ListLeveragePool', data: listLeveragePool });
+    // listSheets.push({ sheetName: 'LeverageData', data: leveragePools });
+
+    // Buớc 2: Gọi API Market Parame của float để lấy thông tin pool float
+    let listFloatMarketParams = await APICommon.callAPIMarketParams(envFloat);
+    let listFloatPool = await APICommon.callAPILoadMainScreen(envFloat);
+    let listFloatTotalSupply = await APICommon.callAPIResevePool(envFloat);
+    // Ghép dữ liệu Load main screen và total supply của float
+    let floatMergeTotalSupply = listFloatPool.map((market: any) => {
+        const pool = listFloatTotalSupply.find((p: any) => p.poolId === market.poolId);
+        return { ...market, ...pool };
+    });
+
+    // Ghép dữ liệu và Load main screen và Market param của Float
+    let floatPools = floatMergeTotalSupply.map((market: any) => {
+        const pool = listFloatMarketParams.find((p: any) => p.poolId === market.poolId);
+        let calFloatSupplyAPY = market.borrowApr * market.utilization / 100 * (1 - pool.loanFeeRate)
+        return { ...market, ...pool, calFloatSupplyAPY: calFloatSupplyAPY };
+    });
+    // listSheets.push({ sheetName: 'ListFloatPool', data: listFloatPool });
+    // listSheets.push({ sheetName: 'ListFloatMarketParams', data: listFloatMarketParams });
+    // listSheets.push({ sheetName: 'floatMergeTotalSupply', data: floatMergeTotalSupply });
+    // listSheets.push({ sheetName: 'FloatData', data: floatPools });
+
+    // Bước 3 Ghép dữ liệu Float và Leverage pool để tính supply APY cuối cùng trên pool
+    let floatVSLeveragePools = floatPools.map((market: any) => {
+        const pool = leveragePools.find((p: any) => p.poolId === market.alterToken);
+        let lTokenRate = pool ? pool.dtokenRate : 0;
+        let a = pool ? (market.alterAmount * lTokenRate) / market.totalSupply : 0;
+        let calFloatVSLeverageSupplyAPY = market.calFloatSupplyAPY + a * (pool ? pool.supplApy : 0);
+        let leverageSupplyAPY = pool ? pool.calSupplyAPY : 0;
+        return { ...market, lTokenRate: lTokenRate, leverageSupplyAPY: leverageSupplyAPY, a: a, calFloatVSLeverageSupplyAPY: calFloatVSLeverageSupplyAPY };
+    });
+
+    // floatVSLeveragePools.forEach(async (pool: any) => {
+    //     console.log(`Duyệt từng pool để lấy supply APY ở màn Supply screen $poolId: ${pool.poolId}`);
+    //     let supplyScreenSupplyAPY = await APICommon.callAPILoadSupplyScreenGetSupplyAPY(pool.poolId, envFloat);
+    //     floatVSLeveragePools.push({ ...pool, supplyScreenSupplyAPY: supplyScreenSupplyAPY });
+    // });
+    let supplyScreenSupplyAPY = await APICommon.callAPILoadSupplyScreenGetSupplyAPY(floatVSLeveragePools[0].poolId, envFloat);
 
     // save data ra file Excel
+    listSheets.push({ sheetName: 'floatVSLeveragePools', data: floatVSLeveragePools });
     common.saveToExcelFileMultipleSheets(`test-results/AllData_PREPROD_FLOAT_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.xlsx`, listSheets);
+});
+
+test('Check API price', async () => {
+    let envFloat = config.env('MAIN_FLOAT');
+    let supplyScreenSupplyAPY = await APICommon.callAPILoadSupplyScreenGetSupplyAPY('814de8a99452972a9fa9fe2c0f59f49697f208005c001ecac1ddfd57.f04403181fbd051edd971af67b85f6c6fe1d9d98949a80b9f3803a14', envFloat);
 });
 
 test('Get all data merge float và leverage full', async () => {
     test.setTimeout(9000000);
     let listSheets: common.SheetInput[] = [];
-    let env = config.env('PREPROD_FLOAT');
-    
+    let envFloat = config.env('PREPROD_FLOAT');
+    let envLeverage = config.env('PREPROD_LEVERAGE');
+
     console.log(` Bước 1 đọc db pool float trong file excel`);
-    let listTokenFloat = await readDBdata('./tests/datatest/DB_Float_Pools.xlsx', 'FloatListPools', env);
+    let listTokenFloat = await readDBdata('./tests/datatest/DB_Float_Pools.xlsx', 'FloatListPools', envFloat);
     listTokenFloat.sort((a: any, b: any) => (a.pool_token > b.pool_token) ? 1 : -1);
-    
+
     console.log(` Bước 2 đọc db pool leverage trong file excel`);
-    let listTokenLeverage = await readDBdata('./tests/datatest/DB_Float_Pools.xlsx', 'LeverageListPools', env);
-    
+    let listTokenLeverage = await readDBdata('./tests/datatest/DB_Float_Pools.xlsx', 'LeverageListPools', envLeverage);
+
     console.log(` Bước 3: Gọi API Market Parame của float`)
-    let marketParamsFloat = await callAPIMarketParams(config.env('PREPROD_FLOAT'));
+    let marketParamsFloat = await callAPIMarketParams(envFloat);
     marketParamsFloat.sort((a: any, b: any) => (a.Pool_id > b.Pool_id) ? 1 : -1);
     listSheets.push({ sheetName: 'MarketParams_Float', data: marketParamsFloat });
 
     console.log(` Bước 4: Gọi API Market Parame của Leverage`);
-    let marketParamsLeverage = await callAPIMarketParams(config.env('PREPROD_LEVERAGE'));
+    let marketParamsLeverage = await callAPIMarketParams(envLeverage);
     listSheets.push({ sheetName: 'MarketParams_Leverage', data: marketParamsLeverage });
 
     // Ghép dữ liệu Leverage vào Float
@@ -141,41 +228,39 @@ test('Get all data merge float và leverage full', async () => {
     listSheets.push({ sheetName: 'DataFromDB_Leverage', data: listTokenLeverage });
 
     console.log(` Bước 5: Gọi API Market Info`);
-    env = config.env('PREPROD_FLOAT');
-    let results = await callAPIPoolInfo(listTokenFloat, env, 'PoolInfo');
+    // env = config.env('PREPROD_FLOAT');
+    let results = await callAPIPoolInfo(listTokenFloat, envFloat, 'PoolInfo');
     results.sort((a: any, b: any) => (a.poolId > b.poolId) ? 1 : -1);
     listSheets.push({ sheetName: 'MarketInfo', data: results });
 
-    // console.log(` Bước 6: Gọi API lending pool`);
-    // let response = await callAPILendingPool(env);
-    // let data = await response.json();
-    // let lendingResults: any[] = [];
-    // for (const item of data.data.pools) {
-    //     lendingResults.push({
-    //         poolId: item.poolId,
-    //         token: item.token,
-    //         liquidity: item.liquidity,
-    //         liquidityInUsd: item.liquidityInUsd,
-    //         totalBorrow: item.totalBorrow,
-    //         utilization: item.utilization,
-    //         supplyApy: item.supplyApy,
-    //         borrowApr: item.borrowApr,
-    //     }
-    //     );
-    // }
-    // lendingResults.sort((a: any, b: any) => (a.poolId > b.poolId) ? 1 : -1);
-    // listSheets.push({ sheetName: 'LendingPool', data: lendingResults });
+    console.log(` Bước 6: Gọi API lending pool`);
+    let response = await callAPILendingPool(envFloat);
+    let data = await response.json();
+    let lendingResults: any[] = [];
+    for (const item of data.data.pools) {
+        lendingResults.push({
+            poolId: item.poolId,
+            token: item.token,
+            liquidity: item.liquidity,
+            liquidityInUsd: item.liquidityInUsd,
+            totalBorrow: item.totalBorrow,
+            utilization: item.utilization,
+            supplyApy: item.supplyApy,
+            borrowApr: item.borrowApr,
+        }
+        );
+    }
+    lendingResults.sort((a: any, b: any) => (a.poolId > b.poolId) ? 1 : -1);
+    listSheets.push({ sheetName: 'LendingPool', data: lendingResults });
 
-    // console.log(` Bước 7: Gọi API Supply Screen`);
-    // let supplyResults = await callAPILoadSupplyScreen(listTokenFloat, env, 'SupplyScreen');
-    // supplyResults.sort((a: any, b: any) => (a.pool_token > b.pool_token) ? 1 : -1);
-    // listSheets.push({ sheetName: 'SupplyScreen', data: supplyResults });
-    // console.log(` Bước 8: Gọi API Borrow Screen`);
-    // let borrowResults = await callAPILoadBorrowScreen(listTokenFloat, env, 'BorrowScreen');
-    // borrowResults.sort((a: any, b: any) => (a.poolId > b.poolId) ? 1 : -1);
-    // listSheets.push({ sheetName: 'BorrowScreen', data: borrowResults });
-
-
+    console.log(` Bước 7: Gọi API Supply Screen`);
+    let supplyResults = await callAPILoadSupplyScreen(listTokenFloat, envFloat, 'SupplyScreen');
+    supplyResults.sort((a: any, b: any) => (a.pool_token > b.pool_token) ? 1 : -1);
+    listSheets.push({ sheetName: 'SupplyScreen', data: supplyResults });
+    console.log(` Bước 8: Gọi API Borrow Screen`);
+    let borrowResults = await callAPILoadBorrowScreen(listTokenFloat, envFloat, 'BorrowScreen');
+    borrowResults.sort((a: any, b: any) => (a.poolId > b.poolId) ? 1 : -1);
+    listSheets.push({ sheetName: 'BorrowScreen', data: borrowResults });
 
     // save data ra file Excel
     common.saveToExcelFileMultipleSheets(`test-results/AllData_PREPROD_FLOAT_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.xlsx`, listSheets);
@@ -279,18 +364,24 @@ async function callAPIMarketParams(env: any): Promise<any> {
     responseMarketInfo.data.markets.forEach((market: any) => {
         let altTokens = market.alternativeSupplyTokens || [];
         let supplyLeverage = false;
+        let alterAmount = 0;
+        let alterToken = '';
         altTokens.forEach((altToken: any) => {
             if (altToken.protocolName === 'Leverage' && altToken.isEnable === true) {
                 supplyLeverage = true;
+                alterAmount = altToken.tokenAmount;
+                alterToken = altToken.poolId;
             }
         });
         rows.push({
             Pool_id: market.poolId,
             Token: market.token,
             TokenName: market.tokenName,
-            loanFeeRate: market.loanFeeRate,
-            utilizationCap: market.utilizationCap,
-            supplyLeverage: supplyLeverage
+            LoanFeeRate: market.loanFeeRate,
+            UtilizationCap: market.utilizationCap,
+            SupplyLeverage: supplyLeverage,
+            AlterToken: alterToken,
+            AlterAmount: alterAmount,
         });
     });
     return rows;
