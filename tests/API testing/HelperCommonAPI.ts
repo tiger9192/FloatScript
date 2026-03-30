@@ -7,8 +7,8 @@ import * as config from '../config';
 
 
 /** Call API Load suppy screen và lấy supply APY */
-export async function callAPILoadSupplyScreenGetSupplyAPY(poolId: string, env: any): Promise<number> {
-    console.log(`Calling API Load supply screen to get supply APY ${env.urlBff}/api/v1/load-supply-screen`);
+export async function callAPILoadSupplyScreen(poolId: string, env: any): Promise<any> {
+    // console.log(`Calling API Load supply screen to get supply APY ${env.urlBff}/api/v1/load-supply-screen`);
     const apiContext = await request.newContext();
     let requestParam = JSON.stringify({
         poolId: poolId
@@ -20,9 +20,36 @@ export async function callAPILoadSupplyScreenGetSupplyAPY(poolId: string, env: a
         data: requestParam
     });
     expect(response.status()).toBe(200);
-    const responseListPool = await response.json();
-    console.log(`Supply APY của pool ${poolId} là ${responseListPool.data.supplyApy}`);
-    return responseListPool.data.supplyApy;
+    const responseSupply = await response.json();
+    return responseSupply;
+}
+
+/** Call API Load borrow screen và lấy borrow APR */
+export async function callAPILoadBorrowScreen(poolId: string, env: any): Promise<any> {
+    // console.log(`Calling API Load borrow screen ${env.urlBff}/api/v1/load-borrow-screen`);
+    const apiContext = await request.newContext();
+    const response = await apiContext.get(`${env.urlBff}/api/v1/load-borrow-screen?poolId=${poolId}`, {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+    expect(response.status()).toBe(200);
+    const responseBorrow = await response.json();
+    return responseBorrow;
+}
+
+/** call API get market info */
+export async function callAPIGetMarketInfo(poolId: string, env: any): Promise<any> {
+    // console.log(`Calling API Get  ${env.urlMonitor}`);
+    const apiContext = await request.newContext();
+    const response = await apiContext.get(`${env.urlMonitor}?poolId=${poolId}`, {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+    expect(response.status()).toBe(200);
+    const responsePoolInfo = await response.json();
+    return responsePoolInfo;
 }
 
 /** Hàm gọi API Load main screen và trả về dữ liệu đã được xử lý
@@ -78,10 +105,10 @@ export async function callAPIResevePool(env: any): Promise<any> {
         },
     });
     expect(response.status()).toBe(200);
-    const responseMarketInfo = await response.json();
+    const responseMarketParams = await response.json();
     const rows: any[] = [];
 
-    responseMarketInfo.data.pools.forEach((pool: any) => {
+    responseMarketParams.data.pools.forEach((pool: any) => {
 
         rows.push({
             poolId: pool.poolId,
@@ -110,31 +137,8 @@ export async function callAPIMarketParams(env: any): Promise<any> {
         },
     });
     expect(response.status()).toBe(200);
-    const responseMarketInfo = await response.json();
-    const rows: any[] = [];
-
-    responseMarketInfo.data.markets.forEach((market: any) => {
-        let altTokens = market.alternativeSupplyTokens || [];
-        let supplyLeverage = false;
-        let alterAmount = 0;
-        let alterToken = '';
-        altTokens.forEach((altToken: any) => {
-            if (altToken.protocolName === 'Leverage' && altToken.isEnable === true) {
-                supplyLeverage = true;
-                alterAmount = altToken.tokenAmount;
-                alterToken = altToken.poolId;
-            }
-        });
-        rows.push({
-            poolId: market.poolId,
-            token: market.token,
-            tokenName: market.tokenName,
-            loanFeeRate: market.loanFeeRate,
-            alterToken: alterToken,
-            alterAmount: alterAmount,
-        });
-    });
-    return rows;
+    const responseMarketParams = await response.json();
+    return responseMarketParams;
 }
 
 export async function callAPIPrice(baseToken: string, quoteToken: string, denominatior: string, skh: string, url: string): Promise<any> {

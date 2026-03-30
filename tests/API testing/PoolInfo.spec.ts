@@ -151,22 +151,12 @@ test('Check supply APY theo luồng Float supply Leverage ', async () => {
         return { ...market, lTokenRate: lTokenRate, leverageSupplyAPY: leverageSupplyAPY, a: a, calFloatVSLeverageSupplyAPY: calFloatVSLeverageSupplyAPY };
     });
 
-    // floatVSLeveragePools.forEach(async (pool: any) => {
-    //     console.log(`Duyệt từng pool để lấy supply APY ở màn Supply screen $poolId: ${pool.poolId}`);
-    //     let supplyScreenSupplyAPY = await APICommon.callAPILoadSupplyScreenGetSupplyAPY(pool.poolId, envFloat);
-    //     floatVSLeveragePools.push({ ...pool, supplyScreenSupplyAPY: supplyScreenSupplyAPY });
-    // });
-    let supplyScreenSupplyAPY = await APICommon.callAPILoadSupplyScreenGetSupplyAPY(floatVSLeveragePools[0].poolId, envFloat);
 
     // save data ra file Excel
     listSheets.push({ sheetName: 'floatVSLeveragePools', data: floatVSLeveragePools });
     common.saveToExcelFileMultipleSheets(`test-results/AllData_PREPROD_FLOAT_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.xlsx`, listSheets);
 });
 
-test('Check API price', async () => {
-    let envFloat = config.env('MAIN_FLOAT');
-    let supplyScreenSupplyAPY = await APICommon.callAPILoadSupplyScreenGetSupplyAPY('814de8a99452972a9fa9fe2c0f59f49697f208005c001ecac1ddfd57.f04403181fbd051edd971af67b85f6c6fe1d9d98949a80b9f3803a14', envFloat);
-});
 
 test('Get all data merge float và leverage full', async () => {
     test.setTimeout(9000000);
