@@ -63,15 +63,18 @@ test('Check supply APY theo luồng Float supply Leverage ', async () => {
         return { ...market, lTokenRate: lTokenRate, leverageSupplyAPY: leverageSupplyAPY, a: a, calFloatVSLeverageSupplyAPY: calFloatVSLeverageSupplyAPY };
     });
 
+    // Bước 4: Gọi API load supply screen để lấy supply APY của từng pool.
     let supplAPYFromSupplyScreen = await callAPILoadSupplyScreen(floatVSLeveragePools, envFloat);
-
+    // Ghép dữ liệu load supply screen với dữ liệu đã merge ở bước 3
     let mergeSupplyAPYFromSupplyScreen = floatVSLeveragePools.map((market: any) => {
         const pool = supplAPYFromSupplyScreen.find((p: any) => p.poolId === market.poolId);
         return { ...market, ...pool };
     });
 
+    // Bước 5: Gọi API loan monitor để lấy supply APY của từng pool.
     let supplyAPYFromMarketInfo = await callAPILoanMonitor(floatVSLeveragePools, envFloat);
-    let mergeSupplyAPYFromMarketInfo = mergeSupplyAPYFromSupplyScreen.map((market: any) => {
+    // Ghép dữ liệu load loan monitor với dữ liệu đã merge ở bước 4
+    let SupplyAPYFromMarketInfo = mergeSupplyAPYFromSupplyScreen.map((market: any) => {
         const pool = supplyAPYFromMarketInfo.find((p: any) => p.poolId === market.poolId);
         return { ...market, ...pool };
     });
@@ -80,8 +83,9 @@ test('Check supply APY theo luồng Float supply Leverage ', async () => {
     // save data ra file Excel
     // listSheets.push({ sheetName: 'floatVSLeveragePools', data: floatVSLeveragePools });
     // listSheets.push({ sheetName: 'mergeSupplyAPYFromSupplyScreen', data: mergeSupplyAPYFromSupplyScreen });
-    listSheets.push({ sheetName: 'mergeSupplyAPYFromMarketInfo', data: mergeSupplyAPYFromMarketInfo });
-    common.saveToExcelFileMultipleSheets(`test-results/AllData_PREPROD_FLOAT_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.xlsx`, listSheets);
+    // Lưu toàn bộ dữ liệu đã ghép ra file excel
+    listSheets.push({ sheetName: 'mergeSupplyAPYFromMarketInfo', data: SupplyAPYFromMarketInfo });
+    common.saveToExcelFileMultipleSheets(`test-results/Supply_APY_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.xlsx`, listSheets);
 });
 
 function readMarketParamPool(listPool: any[]): any[] {
