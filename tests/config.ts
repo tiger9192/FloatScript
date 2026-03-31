@@ -171,7 +171,7 @@ export function env(env: string) {
             oracleScriptHash: '', // poc
             urlPrice: 'https://onchain-price-aggregator.api.danogo.io/api/v1/prices',
             urlMarket: 'https://crypto-admin-beta.tekoapis.com',
-            urlBff: 'https://float-lending-bff-beta.tekoapis.com',
+            urlBff: 'https://fleverage-bff-beta.tekoapis.com',
             urlMonitor: 'https://loan-monitoring.tekoapis.com/api/v1/load-market-info',
             yieldUrl: 'https://yield-aggregator.tekoapis.com/',
             resultName: 'MAIN_LEVERAGE',

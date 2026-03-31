@@ -17,7 +17,8 @@ test('Check supply APY theo luồng Float supply Leverage ', async () => {
     let envLeverage = config.env('MAIN_LEVERAGE');
 
     // Bước 1: Gọi API Market Parame, load main screen của Leverage để lấy thông tin pool leverage
-    let listLeveragePool = await APICommon.callAPILoadMainScreen(envLeverage);
+    let leveragePoolsMainScreen = await APICommon.callAPILoadMainScreen(envLeverage);
+    let listLeveragePool = readPoolInfoFromAPIListPool(leveragePoolsMainScreen.data.pools);
     let leverageMarketParams = await APICommon.callAPIMarketParams(envLeverage);
     let listLeverageMarketParams = readMarketParamPool(leverageMarketParams.data.markets);
 
@@ -29,10 +30,11 @@ test('Check supply APY theo luồng Float supply Leverage ', async () => {
 
     // listSheets.push({ sheetName: 'ListLeverageMarketParams', data: listLeverageMarketParams });
     // listSheets.push({ sheetName: 'ListLeveragePool', data: listLeveragePool });
-    // listSheets.push({ sheetName: 'LeverageData', data: leveragePools });
+    // listSheets.push({ sheetName: 'leveragePools', data: leveragePools });
 
     // Buớc 2: Gọi API Market Parame của float để lấy thông tin pool float
-    let listFloatPool = await APICommon.callAPILoadMainScreen(envFloat);
+    let floatPoolsMainScreen = await APICommon.callAPILoadMainScreen(envFloat);
+    let listFloatPool = readPoolInfoFromAPIListPool(floatPoolsMainScreen.data.pools);
     let loatMarketParams = await APICommon.callAPIMarketParams(envFloat);
     let listFloatMarketParams = readMarketParamPool(loatMarketParams.data.markets);
     let listFloatTotalSupply = await callAPILoadBorrowScreenToGetTotalSupply(listFloatPool, envFloat);
@@ -58,8 +60,8 @@ test('Check supply APY theo luồng Float supply Leverage ', async () => {
         const pool = leveragePools.find((p: any) => p.poolId === market.alterToken);
         let lTokenRate = pool ? pool.dtokenRate : 0;
         let a = pool ? (market.alterAmount * lTokenRate) / market.totalSupply : 0;
-        let calFloatVSLeverageSupplyAPY = market.calFloatSupplyAPY + a * (pool ? pool.supplApy : 0);
-        let leverageSupplyAPY = pool ? pool.calSupplyAPY : 0;
+        let calFloatVSLeverageSupplyAPY = market.calFloatSupplyAPY + a * (pool ? pool.supplyApy : 0);
+        let leverageSupplyAPY = pool ? pool.supplyApy : 0;
         return { ...market, lTokenRate: lTokenRate, leverageSupplyAPY: leverageSupplyAPY, a: a, calFloatVSLeverageSupplyAPY: calFloatVSLeverageSupplyAPY };
     });
 
@@ -79,15 +81,34 @@ test('Check supply APY theo luồng Float supply Leverage ', async () => {
         return { ...market, ...pool };
     });
 
+    let checkResult = true;
+    SupplyAPYFromMarketInfo.forEach((item: any) => {
+        if (Math.round(item.supplyApy * 100) / 100 === Math.round(item.supplyAPYfromSupplyScreen * 100) / 100 &&
+            Math.round(item.totalSupplyFromMaketInfo * 100) / 100 === Math.round(item.calFloatVSLeverageSupplyAPY * 100) / 100 &&
+            Math.round(item.supplyApy * 100) / 100 === Math.round(item.totalSupplyFromMaketInfo * 100) / 100
+        ) {
+            // ko lam gi ca
+        }
+        else {
+            checkResult = false;
+            console.log(`Pool ${item.poolId} - ${item.tokenName} has different supply APY. 
+                Supply APY from main screen: ${item.supplyApy}, supply APY from market info: ${item.totalSupplyFromMaketInfo}, 
+                supply APY from supply screen: ${item.supplyAPYfromSupplyScreen}, total supply calculated: ${item.calFloatVSLeverageSupplyAPY}`);
+        }
+    });
+
 
     // save data ra file Excel
     // listSheets.push({ sheetName: 'floatVSLeveragePools', data: floatVSLeveragePools });
     // listSheets.push({ sheetName: 'mergeSupplyAPYFromSupplyScreen', data: mergeSupplyAPYFromSupplyScreen });
     // Lưu toàn bộ dữ liệu đã ghép ra file excel
     listSheets.push({ sheetName: 'mergeSupplyAPYFromMarketInfo', data: SupplyAPYFromMarketInfo });
-    common.saveToExcelFileMultipleSheets(`test-results/Supply_APY_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.xlsx`, listSheets);
+    common.saveToExcelFileMultipleSheets(`test-results/Supply_APY_${envFloat.resultName}_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.xlsx`, listSheets);
 });
 
+/** Đọc list market params của từng pool
+ * trả về list gồm poolId, token, tokenName, loanFeeRate, alterToken, alterAmount (số lượng token leverage đã supply vào pool)
+ */
 function readMarketParamPool(listPool: any[]): any[] {
     const rows: any[] = [];
     listPool.forEach((market: any) => {
@@ -109,6 +130,26 @@ function readMarketParamPool(listPool: any[]): any[] {
             loanFeeRate: market.loanFeeRate,
             alterToken: alterToken,
             alterAmount: alterAmount,
+        });
+    });
+    return rows;
+}
+
+/** Đọc pool info từ API load main screen, trả về list gồm poolId, token, tokenName, totalBorrow, utilization, borrowApr, supplyApy, dTokenRate
+ */
+function readPoolInfoFromAPIListPool(listPool: any[]): any[] {
+    const rows: any[] = [];
+    listPool.forEach((pool: any) => {
+        rows.push({
+            poolId: pool.poolId,
+            token: pool.token,
+            tokenName: pool.tokenName,
+            totalBorrow: pool.totalBorrow,
+            utilization: pool.utilization,
+            liquidity: pool.liquidity,
+            borrowApr: pool.borrowApr,
+            supplyApy: pool.supplyApy,
+            dtokenRate: pool.dTokenRate,
         });
     });
     return rows;

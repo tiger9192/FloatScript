@@ -52,16 +52,7 @@ export async function callAPIGetMarketInfo(poolId: string, env: any): Promise<an
     return responsePoolInfo;
 }
 
-/** Hàm gọi API Load main screen và trả về dữ liệu đã được xử lý
- * Dữ liệu trả về sẽ bao gồm các trường:
- * poolId,  
- * tokenName,
- * token,
- * totalBorrow,
- * utilization,
- * borrowApr,            
- * supplyApy, 
- * dTokenRate   
+/** Hàm gọi API Load main screen và trả về full
  */
 export async function callAPILoadMainScreen(env: any): Promise<any> {
     const apiContext = await request.newContext();
@@ -73,21 +64,8 @@ export async function callAPILoadMainScreen(env: any): Promise<any> {
     });
     expect(response.status()).toBe(200);
     const responseListPool = await response.json();
-    const rows: any[] = [];
-
-    responseListPool.data.pools.forEach((pool: any) => {
-        rows.push({
-            poolId: pool.poolId,
-            token: pool.token,
-            tokenName: pool.tokenName,
-            totalBorrow: pool.totalBorrow,
-            utilization: pool.utilization,
-            borrowApr: pool.borrowApr,
-            supplApy: pool.supplyApy,
-            dtokenRate: pool.dTokenRate,
-        });
-    });
-    return rows;
+    return responseListPool
+   
 }
 
 /** Hàm gọi API reserve pool lấy total supply
