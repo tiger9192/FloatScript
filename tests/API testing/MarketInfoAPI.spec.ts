@@ -1,116 +1,135 @@
+import { test, expect, request } from '@playwright/test';
 import * as XLSX from "xlsx";
-import { test, expect, request } from "@playwright/test";
-import * as config from '../config';
+import fs from 'fs';
+import csv from 'csv-parser';
 import * as common from '../Common';
+import * as config from '../config';
+import { callAPIPrice } from './HelperCommonAPI';
+import { readResponse } from './HelperCommonAPI';
+import * as APICommon from './HelperCommonAPI';
 
-test('Verify MarketInfo APY', async () => {
-    const apiContext = await request.newContext();
-    // const env = config.env('PREVIEW');
-    // const env = config.env('PREPROD');
-    // const env = config.env('PREPROD_FLOAT');
-    // const env = config.env('MAIN_OLD_POOL');
-    const env = config.env('MAIN_NEW_POOL');
-    const response = await apiContext.get(env.urlMarket, {
-        headers: {
-            'Content-Type': 'application/json'
-        },
-    });
-    expect(response.status()).toBe(200);
-    const responseMarketInfo = await response.json();
-    const rows: any[] = [];
+let floatPools: any[] = [];
 
-    responseMarketInfo.data.markets.forEach((market: any) => {
-        market.supportedCollaterals.forEach((col: any) => {
-            rows.push({
-                Pool_id: market.poolId,
-                Token: market.token,
-                TokenName: market.tokenName,
-                collateralToken: col.token,
-                collateralTokenName: col.tokenName,
-                collateralIsEnable: col.isEnable,
-                liquidationThreshold: col.liquidationThreshold,
-            });
-        });
+test.beforeAll(async () => {
+  console.log('Chạy 1 lần trước tất cả test');
+
+    test.setTimeout(9000000);
+    let listSheets: common.SheetInput[] = [];
+
+    let envFloat = config.env('MAIN_FLOAT');
+    let envLeverage = config.env('MAIN_LEVERAGE');
+
+    // Buớc 1: Gọi API main screen của float để lấy thông tin pool float
+    let floatPoolsMainScreen = await APICommon.callAPILoadMainScreen(envFloat);
+    let listFloatPool = readPoolInfoFromAPIListPool(floatPoolsMainScreen.data.pools);
+
+    // Bước 2: gọi API market param của float pool
+    let loatMarketParams = await APICommon.callAPIMarketParams(envFloat);
+    let listFloatMarketParams = readMarketParamPool(loatMarketParams.data.markets);
+
+    // Bước 3: gọi API load borrow screen để lấy total supply của float pool
+    let listFloatTotalSupply = await callAPILoadBorrowScreenToGetTotalSupply(listFloatPool, envFloat);
+    // Ghép dữ liệu Load main screen và total supply của float
+    let floatMergeTotalSupply = listFloatPool.map((market: any) => {
+        const pool = listFloatTotalSupply.find((p: any) => p.poolId === market.poolId);
+        return { ...market, ...pool };
     });
-    const listToken = await readTokenList(rows);
-    let timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    common.saveToExcelFile2sheet(`test-results/market_${env.resultName}_${timestamp}.xlsx`, 'Market info', 'List token', rows, listToken);
-    console.log("✅ Đã ghi dữ liệu ra file markets excel");
+
+    // Ghép dữ liệu và Load main screen và Market param của Float
+    floatPools = floatMergeTotalSupply.map((market: any) => {
+        const pool = listFloatMarketParams.find((p: any) => p.poolId === market.poolId);
+        let calFloatSupplyAPY = market.borrowApr * market.utilization / 100 * (1 - pool.loanFeeRate)
+        return { ...market, ...pool, calFloatSupplyAPY: calFloatSupplyAPY };
+    });
+   
+    // Lưu toàn bộ dữ liệu đã ghép ra file excel
+    listSheets.push({ sheetName: 'floatPools', data: floatPools });
+    common.saveToExcelFileMultipleSheets(`test-results/Supply_APY_${envFloat.resultName}_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.xlsx`, listSheets);
 });
 
-test('Get pool config', async () => {
-    const apiContext = await request.newContext();
-    // const env = config.env('PREVIEW');
-    // const env = config.env('PREPROD');
-    const env = config.env('PREPROD_FLOAT');
-    // const env = config.env('MAIN_OLD_POOL');
-    // const env = config.env('MAIN_NEW_POOL');
-    const response = await apiContext.get(env.urlMarket, {
-        headers: {
-            'Content-Type': 'application/json'
-        },
-    });
-    expect(response.status()).toBe(200);
-    const responseMarketInfo = await response.json();
+
+test('Check supply APY theo luồng Float supply Leverage ', async () => {
+    console.log('Bắt đầu test: Check supply APY theo luồng Float supply Leverage');
+});
+
+/** Đọc list market params của từng pool
+ * trả về list gồm poolId, token, tokenName, loanFeeRate, alterToken, alterAmount (số lượng token leverage đã supply vào pool)
+ */
+function readMarketParamPool(listPool: any[]): any[] {
     const rows: any[] = [];
-
-    responseMarketInfo.data.markets.forEach((market: any) => {
-
+    listPool.forEach((market: any) => {
+        let altTokens = market.alternativeSupplyTokens || [];
+        let supplyLeverage = false;
+        let alterAmount = 0;
+        let alterToken = '';
+        altTokens.forEach((altToken: any) => {
+            if (altToken.protocolName === 'Leverage' && altToken.isEnable === true) {
+                supplyLeverage = true;
+                alterAmount = altToken.tokenAmount;
+                alterToken = altToken.poolId;
+            }
+        });
         rows.push({
-            Pool_id: market.poolId,
-            Token: market.token,
-            TokenName: market.tokenName,
-            loanFeeRate:market.loanFeeRate,
-            utilizationCap: market.utilizationCap,
+            poolId: market.poolId,
+            token: market.token,
+            tokenName: market.tokenName,
+            loanFeeRate: market.loanFeeRate,
+            alterToken: alterToken,
+            alterAmount: alterAmount,
         });
     });
-    const listToken = await readTokenList(rows);
-    let timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    common.saveToExcelFile(`test-results/market_${env.resultName}_${timestamp}.xlsx`, 'Market info', rows);
-    console.log("✅ Đã ghi dữ liệu ra file markets excel");
-});
-
-async function readTokenList(marketList: any[]): Promise<any[]> {
-    let allToken: any[] = [];
-    marketList.forEach((market: any) => {
-        allToken.push({ token: market.token, tokenName: market.tokenName });
-        allToken.push({ token: market.collateralToken, tokenName: market.collateralTokenName });
-    });
-
-    const tokenList = [...new Map(allToken.map(item => [item.token, item])).values()];
-    return tokenList;
+    return rows;
 }
 
-test('Verify API load_supply_list_screen ', async () => {
-    const apiContext = await request.newContext();
-    // const allTokenList = common.readFromExcelFile('./tests/datatest/Token_list.xlsx', 'All float token');
-    const url = 'https://yield-aggregator.dev.tekoapis.net/api/v1/load-supply-list-screen?page=1&pageSize=10&token=&onlyMySupply=false&userAddress=addr_test1qqlq5e8dvclt2er90rx75qs36tmp4w8c6dpwvstpv99q52nex6zylqp9703ta84g29a3mmr5akts26xerycfywkdqtvqlxwkn6';
-    const response = await apiContext.get(url, {
-        headers: {
-            'Content-Type': 'application/json'
-        },
-    });
-    expect(response.status()).toBe(200);
-    const listPool = await response.json();
+/** Đọc pool info từ API load main screen, trả về list gồm poolId, token, tokenName, totalBorrow, utilization, borrowApr, supplyApy, dTokenRate
+ */
+function readPoolInfoFromAPIListPool(listPool: any[]): any[] {
     const rows: any[] = [];
-
-    listPool.data.supplyingPositions.forEach((positions: any) => {
-        positions.supportedCollaterals.forEach((col: any) => {
-            rows.push({
-                Pool_id: positions.poolId,
-                protocolCode: positions.protocolCode,
-                protocolSupplyApy: positions.protocolSupplyApy,
-                collateralToken: col.token,
-                collateralTokenName: col.tokenName,
-                collateralRiskLabel: col.riskLabel,
-            });
+    listPool.forEach((pool: any) => {
+        rows.push({
+            poolId: pool.poolId,
+            token: pool.token,
+            tokenName: pool.tokenName,
+            totalBorrow: pool.totalBorrow,
+            utilization: pool.utilization,
+            liquidity: pool.liquidity,
+            borrowApr: pool.borrowApr,
+            supplyApy: pool.supplyApy,
+            dtokenRate: pool.dTokenRate,
         });
     });
-    // Chuyển sang sheet
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Markets");
-    // Xuất file Excel
-    XLSX.writeFile(workbook, "test-results/supply_list_ADA.xlsx");
-    console.log("✅ Đã ghi dữ liệu ra file supply_list_ADA.xlsx");
-});
+    return rows;
+}
+
+// Call API load supply screen để lấy supply APY của từng pool. Trả về list của tất cả pool
+async function callAPILoadSupplyScreen(listTokenPairs: any[], env: any): Promise<any> {
+    const results: any[] = [];
+    for (const item of listTokenPairs) {
+
+        let response = await APICommon.callAPILoadSupplyScreen(item.poolId, env);
+        results.push({ poolId: item.poolId, supplyAPYfromSupplyScreen: response.data.supplyApy });
+    }
+    return results;
+}
+
+// call API load borrow screen để lấy total supply của từng pool. Trả về list của tất cả pool
+async function callAPILoadBorrowScreenToGetTotalSupply(listTokenPairs: any[], env: any): Promise<any> {
+    const results: any[] = [];
+    for (const item of listTokenPairs) {
+
+        let response = await APICommon.callAPILoadBorrowScreen(item.poolId, env);
+        results.push({ poolId: item.poolId, totalSupply: response.data.totalSupply });
+    }
+    return results;
+}
+
+// call API loan monitor để lấy supply APY của từng pool. Trả về list của tất cả pool
+async function callAPILoanMonitor(listTokenPairs: any[], env: any): Promise<any> {
+    const results: any[] = [];
+    for (const item of listTokenPairs) {
+
+        let response = await APICommon.callAPIGetMarketInfo(item.poolId, env);
+        results.push({ poolId: item.poolId, totalSupplyFromMaketInfo: response.supplyApy });
+    }
+    return results;
+}
