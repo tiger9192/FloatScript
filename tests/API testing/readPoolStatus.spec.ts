@@ -36,6 +36,58 @@ test('Parse list pool', async () => {
     common.saveToExcelFile2sheet(`./test-results/listPools_parsed_${timestamp}.xlsx`, 'PoolsInfo', 'PoolsInfo_Inverse', listpool, listPoolInverse);
 })
 
+test('Call API indexer get concentrated pool', async () => {
+    let listSheets: common.SheetInput[] = [];
+    const rowData = common.readFromExcelFile('./tests/datatest/listConcentratedPools.xlsx', 'Pools');
+    let marketPriceList = await callAPIIndexerGetConcenPool(rowData);
+    // let marketPriceList = marketPrice(listpool.data.liquidityPools);
+    listSheets.push({ sheetName: 'marketPriceList', data: marketPriceList });
+    common.saveToExcelFileMultipleSheets(`test-results/listMarketPrices_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.xlsx`, listSheets);
+})
+
+async function callAPIIndexerGetConcenPool(listPool: any[]): Promise<any> {
+    // console.log(`Calling API Get  ${env.urlMonitor}/api/v1/load-market-info?poolId=${poolId}`);
+    const listMarketPrice: any[] = [];
+    console.log(listPool[0].poolId);
+    for (const item of listPool) {
+        let url = 'https://dapp-indexers-preprod.dev.tekoapis.net/api/v1/concentrated/pools?limit=10&poolNfts=' + item.poolId;
+        console.log(`Calling API Get  ${url}`);
+        const apiContext = await request.newContext();
+        const response = await apiContext.get(url, {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        });
+        expect(response.status()).toBe(200);
+        const responsePoolInfo = await response.json();
+        console.log(`Pool ${responsePoolInfo.data.liquidityPools[0].lpToken} - ${responsePoolInfo.data.liquidityPools[0].lX}/${responsePoolInfo.data.liquidityPools[0].lY} `);
+        listMarketPrice.push({
+            poolNft:item.poolId,
+            lpToken: responsePoolInfo.data.liquidityPools[0].lpToken,
+            tokenA: responsePoolInfo.data.liquidityPools[0].tokenA,
+            tokenB: responsePoolInfo.data.liquidityPools[0].tokenB,
+            lX: responsePoolInfo.data.liquidityPools[0].lX,
+            lY: responsePoolInfo.data.liquidityPools[0].lY,
+            price_YX: responsePoolInfo.data.liquidityPools[0].lY / responsePoolInfo.data.liquidityPools[0].lX,
+            price_XY: responsePoolInfo.data.liquidityPools[0].lX / responsePoolInfo.data.liquidityPools[0].lY,
+        })
+    }
+    return listMarketPrice;
+}
+
+function marketPrice(listPool: any[]): any[] {
+    const listMarketPrice: any[] = [];
+    for (const item of listPool) {
+        console.log(`Pool ${item.poolId} - ${item.tokenA}/${item.tokenB} - Liquidity ${item.liquidity}`);
+        listMarketPrice.push({
+            lpToken: item.lpToken,
+            price_YX: item.lY / item.lX,
+            price_XY: item.lX / item.lY,
+        })
+    }
+    return listMarketPrice;
+}
+
 type PoolInfo = {
 
 
@@ -173,7 +225,7 @@ async function concentratedPool(jsonData: any): Promise<PoolInfo> {
     let tokenAAmount = 0;
     let tokenBAmount = 0;
     if (tokenA === '') {
-        tokenAAmount = jsonData.result.pool.coin - 3000000 - jsonData.result.pool.totalSwapFee;
+        tokenAAmount = jsonData.result.pool.coin - jsonData.result.pool.totalSwapFee;
         for (const asset of jsonData.result.pool.multiAssets) {
             let assetName = asset.policyId + '.' + asset.assets[0].name;
             if (assetName === tokenB) {
@@ -182,7 +234,7 @@ async function concentratedPool(jsonData: any): Promise<PoolInfo> {
         }
     }
     else if (tokenB === '') {
-        tokenBAmount = jsonData.result.pool.coin - 3000000- jsonData.result.pool.totalSwapFee;
+        tokenBAmount = jsonData.result.pool.coin - 3000000 - jsonData.result.pool.totalSwapFee;
         for (const asset of jsonData.result.pool.multiAssets) {
             let assetName = asset.policyId + '.' + asset.assets[0].name;
             // console.log('Asset name '+assetName);

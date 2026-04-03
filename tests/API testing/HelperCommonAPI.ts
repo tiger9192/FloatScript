@@ -38,11 +38,39 @@ export async function callAPILoadBorrowScreen(poolId: string, env: any): Promise
     return responseBorrow;
 }
 
+/** call API List Liquidity Pool */
+export async function callAPIListLiquidityPool(env: any): Promise<any> {
+    console.log(`Calling API Get  ${env.urlLiquidityPair}/api/v1/concentrated/pools?limit=40&offset=`);
+    const apiContext = await request.newContext();
+    const response = await apiContext.get(`${env.urlLiquidityPair}/api/v1/concentrated/pools?limit=40&offset=`, {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+    expect(response.status()).toBe(200);
+    const responsePoolInfo = await response.json();
+    return responsePoolInfo;
+}
+
 /** call API get market info */
 export async function callAPIGetMarketInfo(poolId: string, env: any): Promise<any> {
+    // console.log(`Calling API Get  ${env.urlMonitor}/api/v1/load-market-info?poolId=${poolId}`);
+    const apiContext = await request.newContext();
+    const response = await apiContext.get(`${env.urlMonitor}/api/v1/load-market-info?poolId=${poolId}`, {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+    expect(response.status()).toBe(200);
+    const responsePoolInfo = await response.json();
+    return responsePoolInfo;
+}
+
+/** Call API get collatera data của mornitoring */
+export async function callAPIGetCollateraData(poolId: string, env: any): Promise<any> {
     // console.log(`Calling API Get  ${env.urlMonitor}`);
     const apiContext = await request.newContext();
-    const response = await apiContext.get(`${env.urlMonitor}?poolId=${poolId}`, {
+    const response = await apiContext.get(`${env.urlMonitor}/api/v1/get-collateral-data?poolId=${poolId}`, {
         headers: {
             'Content-Type': 'application/json'
         },
